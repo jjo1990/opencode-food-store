@@ -1,0 +1,26 @@
+# Development overrides for docker-compose.yml
+# This file extends the base docker-compose.yml with development-specific settings
+
+version: '3.8'
+
+services:
+  postgres:
+    environment:
+      POSTGRES_INITDB_ARGS: '-c log_statement=all'
+
+  backend:
+    environment:
+      DEBUG: 'true'
+      PYTHONUNBUFFERED: '1'
+      LOG_LEVEL: 'DEBUG'
+    volumes:
+      - ./apps/backend:/app
+      - /app/__pycache__
+
+  frontend:
+    environment:
+      VITE_API_URL: http://localhost:8000
+      DEBUG: 'true'
+    volumes:
+      - ./apps/frontend/src:/app/src
+      - /app/node_modules

@@ -1,0 +1,145 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint --workspace apps/frontend
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install backend dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint backend (ruff)
+        run: |
+          cd apps/backend
+          ruff check .
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        workspace: ['frontend', 'backend']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js (Frontend)
+        if: matrix.workspace == 'frontend'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python (Backend)
+        if: matrix.workspace == 'backend'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install frontend dependencies
+        if: matrix.workspace == 'frontend'
+        run: npm ci
+
+      - name: Run frontend tests
+        if: matrix.workspace == 'frontend'
+        run: npm run test --workspace apps/frontend -- --coverage --maxWorkers=2
+
+      - name: Install backend dependencies
+        if: matrix.workspace == 'backend'
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run backend tests
+        if: matrix.workspace == 'backend'
+        run: |
+          cd apps/backend
+          pytest --cov=app --cov-report=term-missing
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [type-check, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            apps/frontend/dist
+            apps/backend/build
+          retention-days: 7
