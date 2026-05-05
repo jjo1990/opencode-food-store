@@ -8,10 +8,10 @@ Sistema de e-commerce de productos alimenticios desarrollado con **Spec-Driven D
 
 Antes de escribir una línea de código, leé los tres documentos en `docs/`:
 
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/Descripcion.txt` | Visión general, actores del sistema y stack tecnológico |
-| `docs/Integrador.txt` | Arquitectura en capas, ERD, API REST y patrones de diseño |
+| Archivo                         | Contenido                                                       |
+| ------------------------------- | --------------------------------------------------------------- |
+| `docs/Descripcion.txt`          | Visión general, actores del sistema y stack tecnológico         |
+| `docs/Integrador.txt`           | Arquitectura en capas, ERD, API REST y patrones de diseño       |
 | `docs/Historias_de_usuario.txt` | US-000 a US-076 con criterios de aceptación y reglas de negocio |
 
 Estos documentos son la fuente de verdad del sistema. El agente los lee antes de cada propuesta.
@@ -28,6 +28,7 @@ Estos documentos son la fuente de verdad del sistema. El agente los lee antes de
 ## Setup del entorno de desarrollo
 
 ### Requisitos previos
+
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL 15+

@@ -43,10 +43,12 @@ Automatizar validación en cada push y PR: linting, type checking, tests y build
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `.github/workflows/ci.yml`
 - Branch protection rules en GitHub (Settings)
 
 **Estructura básica:**
+
 ```yaml
 name: CI
 
@@ -82,6 +84,7 @@ jobs:
 ```
 
 **Convenciones:**
+
 - Jobs nombrados en lowercase-with-hyphens
 - `runs-on: ubuntu-latest` para consistencia
 - `timeout-minutes: 10` por si acaso

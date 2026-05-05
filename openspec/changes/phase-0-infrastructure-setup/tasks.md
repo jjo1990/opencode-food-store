@@ -3,7 +3,7 @@
 - [ ] 1.1 Instalar Turborepo globalmente: `npm install -g turbo`
 - [ ] 1.2 Crear `turbo.json` en root con tasks de build, lint, test, dev
 - [ ] 1.3 Crear `/packages` para código compartido (types, utils)
-- [ ] 1.4 Configurar workspaces en `package.json` root (backend, frontend, packages/*)
+- [ ] 1.4 Configurar workspaces en `package.json` root (backend, frontend, packages/\*)
 - [ ] 1.5 Verificar que `turbo run build` ejecuta builds de ambos workspaces
 
 ## 2. TypeScript Configuration
@@ -103,17 +103,17 @@
 
 ## Estimaciones de Esfuerzo
 
-| Grupo | Tareas | Estimación | Bloqueantes |
-|-------|--------|------------|------------|
-| Monorepo | 1.1-1.5 | 2h | No |
-| TypeScript | 2.1-2.6 | 1.5h | Monorepo |
-| ESLint/Prettier | 3.1-3.8 | 2h | TypeScript |
-| Tests | 4.1-4.13 | 3h | ESLint |
-| Docker | 5.1-5.7 | 2.5h | Tests (parallelizable) |
-| GitHub Actions | 6.1-6.8 | 2h | Docker |
-| Husky | 7.1-7.8 | 1h | Docker |
-| Documentation | 8.1-8.8 | 1.5h | Todo anterior |
-| Verification | 9.1-9.8 | 1.5h | Todo anterior |
+| Grupo           | Tareas   | Estimación | Bloqueantes            |
+| --------------- | -------- | ---------- | ---------------------- |
+| Monorepo        | 1.1-1.5  | 2h         | No                     |
+| TypeScript      | 2.1-2.6  | 1.5h       | Monorepo               |
+| ESLint/Prettier | 3.1-3.8  | 2h         | TypeScript             |
+| Tests           | 4.1-4.13 | 3h         | ESLint                 |
+| Docker          | 5.1-5.7  | 2.5h       | Tests (parallelizable) |
+| GitHub Actions  | 6.1-6.8  | 2h         | Docker                 |
+| Husky           | 7.1-7.8  | 1h         | Docker                 |
+| Documentation   | 8.1-8.8  | 1.5h       | Todo anterior          |
+| Verification    | 9.1-9.8  | 1.5h       | Todo anterior          |
 
 **Total estimado: 17 horas concentradas, o 2-3 días con 1-2 developers**
 

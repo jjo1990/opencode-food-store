@@ -50,6 +50,7 @@ Guía completa para que cualquier developer nuevo (o el mismo después de 6 mese
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `DEV_SETUP.md` (root) — main documentation
 - `CONTRIBUTING.md` (root) — contribution guidelines
 - `scripts/setup.sh` (root, optional)
@@ -57,59 +58,71 @@ Guía completa para que cualquier developer nuevo (o el mismo después de 6 mese
 - `TROUBLESHOOTING.md` (root, optional)
 
 **Estructura recomendada de DEV_SETUP.md:**
+
 ```markdown
 # Development Setup Guide
 
 ## Quick Start (5 steps)
+
 1. Clone...
 2. Docker compose up...
 3. Etc.
 
 ## Requirements
+
 - Node 18+
 - Python 3.11+
 - Docker Desktop
 
 ## Detailed Setup
+
 ### Frontend
+
 ### Backend
+
 ### Database
+
 ### Docker
 
 ## Monorepo Structure
 ```
+
 frontend/
 ├── src/
-│   ├── components/
-│   ├── features/
-│   ├── pages/
-│   └── hooks/
+│ ├── components/
+│ ├── features/
+│ ├── pages/
+│ └── hooks/
 backend/
 ├── app/
-│   ├── modules/
-│   ├── core/
-│   └── db/
+│ ├── modules/
+│ ├── core/
+│ └── db/
 openspec/
 ├── changes/
 └── specs/
-```
+
+````
 
 ## Common Commands
 ```bash
 npm run dev       # Start frontend + backend
 npm run test      # Run tests
 npm run lint      # Check linting
-```
+````
 
 ## Troubleshooting
+
 - Docker won't start: ...
 - Port 5173 already in use: ...
 - Postgres connection error: ...
 
 ## Conventions
+
 - Commits: conventional commits
-- Branches: feature/*, bugfix/*, hotfix/*
+- Branches: feature/_, bugfix/_, hotfix/\*
 - File naming: camelCase (JS), snake_case (Python)
+
 ```
 
 **Convenciones de documentación:**
@@ -117,3 +130,4 @@ npm run lint      # Check linting
 - Código en markdown con syntax highlighting
 - Links verificados (dead links = bad DX)
 - Secciones colapsables para detalles
+```

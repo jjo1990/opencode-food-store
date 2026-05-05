@@ -35,16 +35,19 @@ La aplicación Food Store v5.0 necesita coordinar múltiples workspaces (backend
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `package.json` (root) — workspaces
 - `turbo.json` (root) — task definitions
 - `backend/package.json` — scripts de backend
 - `frontend/package.json` — scripts de frontend
 
 **Dependencias agregadas:**
+
 - `turbo` (npm global o local)
 - Backend y frontend mantienen sus dependencies independientes
 
 **Convenciones:**
+
 - Todos los scripts en package.json siguen pattern: `npm run <task>`
 - Output directories: `{workspace}/dist` o `{workspace}/build`
 - Task names son siempre lowercase, hyphenated (ej: `type-check`, no `typeCheck`)

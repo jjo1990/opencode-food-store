@@ -36,19 +36,23 @@ Phase 0 establece la infraestructura compartida que habilita el desarrollo efect
 ## Impact
 
 **Código afectado:**
+
 - Toda la estructura de directorios del monorepo (backend/, frontend/, tools/)
 - Configuración root: tsconfig.json, eslintrc, prettier.json, turbo.json
 - CI/CD: .github/workflows/
 
 **APIs públicas:**
+
 - Endpoints y componentes heredarán las convenciones de TypeScript y linting establecidas aquí
 - Tests de todos los módulos futuros seguirán los templates y patrones definidos en Phase 0
 
 **Dependencias:**
+
 - Turborepo, TypeScript, ESLint, Prettier, Jest, Vitest, Pytest, Husky, Docker
 - Será la base sobre la que se asientan 50 cambios futuros
 
 **Criterio de éxito:**
+
 - ✅ Developer nuevo puede clonar, hacer `docker-compose up` y tener backend + frontend corriendo localmente
 - ✅ `npm run lint` y `npm run test` pasan en todo el monorepo
 - ✅ GitHub Actions corre automáticamente en cada PR y bloquea merge si hay errores

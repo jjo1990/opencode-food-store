@@ -48,12 +48,14 @@ Pre-commit hooks que previenen pushear código que rompe lint, type checks o tes
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `.husky/pre-commit` (script)
 - `.husky/pre-push` (script)
 - `.lintstagedrc.json` (configuration)
 - `package.json` (postinstall script para husky)
 
 **Estructura de hooks:**
+
 ```bash
 # .husky/pre-commit
 #!/bin/sh
@@ -63,10 +65,12 @@ npx lint-staged
 ```
 
 **Dependencias:**
+
 - `husky`
 - `lint-staged`
 
 **Convenciones:**
+
 - Hook files son executables (chmod +x)
 - Scripts son shell scripts (bash/sh compatible)
 - Errores en hooks detienen la operación (git commit o git push falla)

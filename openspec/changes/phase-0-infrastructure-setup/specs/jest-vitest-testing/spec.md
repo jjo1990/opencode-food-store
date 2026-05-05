@@ -66,6 +66,7 @@ Setup de framework de testing para frontend (Jest) y backend (Pytest). Esto incl
 ### Referencias Técnicas
 
 **Files creados/modificados (Frontend):**
+
 - `frontend/jest.config.js`
 - `frontend/src/__tests__/setup.ts`
 - `frontend/src/__tests__/Example.test.tsx` (template)
@@ -73,12 +74,14 @@ Setup de framework de testing para frontend (Jest) y backend (Pytest). Esto incl
 - `frontend/src/__tests__/mocks/` (mock functions)
 
 **Files creados/modificados (Backend):**
+
 - `backend/pyproject.toml` (pytest config)
 - `backend/tests/conftest.py` (fixtures)
 - `backend/tests/unit/test_example.py` (template)
 - `backend/tests/integration/test_api.py` (template)
 
 **Dependencias (Frontend):**
+
 - `jest`
 - `@testing-library/react`
 - `@testing-library/jest-dom`
@@ -87,12 +90,14 @@ Setup de framework de testing para frontend (Jest) y backend (Pytest). Esto incl
 - `jest-environment-jsdom`
 
 **Dependencias (Backend):**
+
 - `pytest`
 - `pytest-asyncio`
 - `pytest-cov`
 - `httpx` (async HTTP client para tests)
 
 **Convenciones:**
+
 - Test files: `*.test.ts`, `*.test.tsx` (frontend), `test_*.py` (backend)
 - Fixtures: reutilizables, nombradas descriptivamente
 - Mocks: NO usar snapshots para API responses (demasiado frágiles)

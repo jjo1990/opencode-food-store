@@ -1,9 +1,11 @@
 # Mapa de Changes — Food Store v5.0
+
 ## Desarrollo Spec-Driven (SDD) — Sprint 0 a Sprint N
 
 ### Visión General
 
 Este documento define el **mapa completo de changes** para desarrollar Food Store desde cero. Cada change es una unidad independiente con:
+
 - **Nombre** (kebab-case): identificador único
 - **Funcionalidad**: qué comportamiento del negocio implementa
 - **Historias de Usuario**: qué US están cubiertas
@@ -150,7 +152,7 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
   - Repository: UserRepository.create()
 - **Frontend**: (será en otro change)
 - **Validaciones**: RN-AU01, RN-AU07, RN-DA04
-- **Testing**: 
+- **Testing**:
   - Email duplicado → error 409
   - Contraseña < 8 caracteres → error 422
   - Rol CLIENT asignado automáticamente ✓
@@ -915,6 +917,7 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 ## Resumen: Orden de Implementación
 
 ### Fase 0: Infraestructura (2-3 semanas)
+
 1. `setup-monorepo-estructura` (Change #1)
 2. `backend-setup-fastapi-dependencies` (Change #2)
 3. `backend-setup-database-alembic-seed` (Change #3)
@@ -926,6 +929,7 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 **Parallelizable**: Changes 2 y 4 pueden correr en paralelo
 
 ### Fase 1: Autenticación (2-3 semanas)
+
 8. `auth-user-registration` (Change #8)
 9. `auth-user-login-rate-limiting` (Change #9)
 10. `auth-token-refresh-rotation` (Change #10)
@@ -936,6 +940,7 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 15. `frontend-error-handling-global` (Change #15)
 
 ### Fase 2: Catálogo (3 semanas)
+
 16. `catalog-categories-hierarchical` (Change #16)
 17. `catalog-ingredients-allergens` (Change #17)
 18. `catalog-products-crud` (Change #18)
@@ -947,14 +952,17 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 24. `frontend-product-detail-modal` (Change #24)
 
 ### Fase 3: Direcciones (1 semana)
+
 25. `addresses-crud` (Change #25)
 26. `frontend-addresses-ui` (Change #26)
 
 ### Fase 4: Carrito (1 semana)
+
 27. `cart-store-persistence` (Change #27)
 28. `frontend-cart-ui-drawer` (Change #28)
 
 ### Fase 5: Pedidos (4 semanas) — **Núcleo del sistema**
+
 29. `orders-fsm-state-machine` (Change #29)
 30. `orders-creation-atomic-uow` (Change #30)
 31. `orders-stock-decrement-confirm` (Change #31)
@@ -965,16 +973,19 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 36. `frontend-order-detail-page` (Change #36)
 
 ### Fase 6: Pagos MercadoPago (2-3 semanas)
+
 37. `payments-mercadopago-integration` (Change #37)
 38. `payments-multiple-attempts-per-order` (Change #38)
 39. `frontend-checkout-card-payment` (Change #39)
 40. `frontend-payment-status-polling` (Change #40)
 
 ### Fase 7: Perfil (1 semana)
+
 41. `profile-user-view-and-edit` (Change #41)
 42. `frontend-profile-page` (Change #42)
 
 ### Fase 8: Admin Panel (2-3 semanas)
+
 43. `admin-dashboard-metrics` (Change #43)
 44. `admin-users-management` (Change #44)
 45. `admin-products-management` (Change #45)
@@ -983,6 +994,7 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 48. `admin-orders-management-fsm` (Change #48)
 
 ### Fase 9: Refinamientos (1-2 semanas)
+
 49. `error-handling-standardization` (Change #49)
 50. `testing-and-documentation` (Change #50)
 
@@ -999,15 +1011,15 @@ El orden es **secuencial pero flexible**: podés paralelizar changes que no teng
 
 ## Patrones Aplicados
 
-| Change | Patrón |
-|--------|--------|
-| #5 | Unit of Work, Repository, Layered Architecture |
-| #29 | State Machine (FSM) |
-| #30 | Snapshot Pattern, Atomic Transactions |
-| #33 | RBAC, Pagination |
-| #37 | Webhook, Idempotency Keys |
-| #23, #35 | Feature-Sliced Design, TanStack Query |
-| #27 | Zustand + localStorage persistence |
+| Change   | Patrón                                         |
+| -------- | ---------------------------------------------- |
+| #5       | Unit of Work, Repository, Layered Architecture |
+| #29      | State Machine (FSM)                            |
+| #30      | Snapshot Pattern, Atomic Transactions          |
+| #33      | RBAC, Pagination                               |
+| #37      | Webhook, Idempotency Keys                      |
+| #23, #35 | Feature-Sliced Design, TanStack Query          |
+| #27      | Zustand + localStorage persistence             |
 
 ---
 

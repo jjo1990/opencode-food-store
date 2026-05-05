@@ -45,6 +45,7 @@ Containerizar la aplicación para reproducibilidad total. `docker-compose.yml` l
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `Dockerfile` (root, multi-stage)
 - `frontend/Dockerfile` (opcional si queremos build separado)
 - `backend/Dockerfile` (opcional si queremos build separado)
@@ -55,6 +56,7 @@ Containerizar la aplicación para reproducibilidad total. `docker-compose.yml` l
 - `.env.example` (template de variables)
 
 **Servicios en docker-compose:**
+
 ```yaml
 services:
   postgres:
@@ -67,7 +69,7 @@ services:
       - ./db-init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   backend:
     build:
@@ -79,7 +81,7 @@ services:
       - DATABASE_URL=postgresql://foodstore:devpass@postgres:5432/foodstore_db
       - SECRET_KEY=dev-secret-key-only-for-local
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./backend:/app/backend
 
@@ -88,12 +90,13 @@ services:
       context: frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - '5173:5173'
     environment:
       - VITE_API_URL=http://localhost:8000
 ```
 
 **Convenciones:**
+
 - Servicios nombrados lowercase (postgres, backend, frontend)
 - Puertos mapeados: 5432 (Postgres), 8000 (FastAPI), 5173 (Vite)
 - Volúmenes nombrados vs bind mounts (usar named para datos persistentes)

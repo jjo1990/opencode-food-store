@@ -36,15 +36,18 @@ TypeScript debe estar configurado en strict mode en toda la aplicación. Esto si
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `tsconfig.json` (root)
 - `frontend/tsconfig.json` (extends root)
 - `backend/tsconfig.json` (si aplica)
 - `tsconfig.build.json` (optional, para build vs editor)
 
 **Dependencias:**
+
 - `typescript` (ya en proyecto)
 
 **Convenciones:**
+
 - Type definitions van en `types/` folder (ej: `types/api.ts`, `types/models.ts`)
 - Interfaces públicas se exportan desde `index.ts` en cada module
 - No se usan `type` vs `interface` sin razón (consistencia)

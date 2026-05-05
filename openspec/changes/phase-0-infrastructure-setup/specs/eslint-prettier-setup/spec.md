@@ -42,12 +42,14 @@ Linting y formato automático de código. ESLint valida que el código siga conv
 ### Referencias Técnicas
 
 **Files creados/modificados:**
+
 - `.eslintrc.json` (frontend)
 - `.prettierrc.json` (root, compartido)
 - `.prettierignore`
 - `.eslintignore`
 
 **Dependencias (frontend):**
+
 - `eslint`
 - `@typescript-eslint/eslint-plugin`
 - `@typescript-eslint/parser`
@@ -57,9 +59,11 @@ Linting y formato automático de código. ESLint valida que el código siga conv
 - `prettier`
 
 **Dependencias (backend):**
+
 - `ruff` (Python linter, instalado via pip)
 
 **Convenciones:**
+
 - ESLint rules: `error` para críticos, `warn` para sugerencias
 - Prettier config es compartida entre frontend/backend (mismo estilo)
 - `.eslintignore` excluye: `node_modules/`, `dist/`, `build/`, `.next/`
