@@ -1,0 +1,31 @@
+{
+  "name": "food-store-monorepo",
+  "version": "0.0.1",
+  "description": "Food Store v5.0 - E-commerce full-stack platform",
+  "private": true,
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --ignore-path .prettierignore",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.3",
+    "prettier": "^3.0.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "food-store-backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Backend dev server would start here'",
+    "build": "echo 'Backend build complete'",
+    "lint": "echo 'Backend linting would run here'",
+    "format": "echo 'Backend formatting would run here'",
+    "type-check": "echo 'Backend type checking (Python) would run here'",
+    "test": "echo 'Backend tests would run here'",
+    "test:watch": "echo 'Backend tests in watch mode would run here'",
+    "clean": "echo 'Backend cleanup'"
+  }
+}

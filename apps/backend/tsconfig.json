@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@food-store/types": ["../../packages/types"]
+    },
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src", "**/*.test.ts"],
+  "exclude": ["node_modules", "dist"]
+}
