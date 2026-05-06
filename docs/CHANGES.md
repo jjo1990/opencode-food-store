@@ -1,1031 +1,1168 @@
-# Mapa de Changes — Food Store v5.0
+# 📋 Mapa Completo de Changes — Food Store v5.0
 
-## Desarrollo Spec-Driven (SDD) — Sprint 0 a Sprint N
-
-### Visión General
-
-Este documento define el **mapa completo de changes** para desarrollar Food Store desde cero. Cada change es una unidad independiente con:
-
-- **Nombre** (kebab-case): identificador único
-- **Funcionalidad**: qué comportamiento del negocio implementa
-- **Historias de Usuario**: qué US están cubiertas
-- **Dependencias**: de qué otros changes depende (y por qué)
-- **Estimación**: horas de desarrollo
-
-El orden es **secuencial pero flexible**: podés paralelizar changes que no tengan dependencias.
+> **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
 ---
 
-## SPRINT 0: Infraestructura Base
+## 📊 Estadísticas Totales
 
-> Sin estos changes, nada funciona. Son la fundación.
+| Métrica                           | Valor                       |
+| --------------------------------- | --------------------------- |
+| **Total de Changes**              | 49                          |
+| **Total de Historias de Usuario** | 77                          |
+| **Fases de desarrollo**           | 8                           |
+| **Sprints recomendados**          | 8-10 (3-4 semanas cada uno) |
+| **Duración estimada**             | ~120-150 horas de trabajo   |
+| **Changes backend**               | 28                          |
+| **Changes frontend**              | 16                          |
+| **Changes transversales**         | 5                           |
 
-### Change #1: `setup-monorepo-estructura`
+---
 
+## 🏗️ PHASE 0 — FUNDACIONES (Sprint 0)
+
+_La base sobre la que se construye todo. Sin esta fase, nada funciona._
+
+### Change 1: `bootstrap-monorepo`
+
+- **Funcionalidad**: Inicializa el repositorio Git con estructura base del monorepo (carpetas `/backend` y `/frontend`), `.gitignore`, `README.md` raíz y `.env.example` para ambas capas.
 - **Historias**: US-000
-- **Funcionalidad**: Crear la estructura de carpetas, Git inicial, README.md y documentación base
-- **Backend**: Carpetas feature-first (`auth/`, `usuarios/`, `productos/`, etc.)
-- **Frontend**: Carpetas FSD (`app/`, `pages/`, `features/`, `entities/`, `shared/`)
-- **Artefactos**: `.gitignore`, `README.md`, `.env.example` (ambos lados)
 - **Dependencias**: Ninguna
-- **Estimación**: 2-3 horas
+- **Orden**: 1
+- **Duración**: ~2 horas
 
 ---
 
-### Change #2: `backend-setup-fastapi-dependencies`
+### Change 2: `setup-backend-core`
 
+- **Funcionalidad**: Configura FastAPI con dependencias core (uvicorn, sqlmodel, pydantic, python-jose), CORS middleware, rate limiting middleware, estructura modular feature-first con carpetas por módulo (`auth/`, `usuarios/`, `productos/`, etc.), módulo `core/` con config, database, security.
 - **Historias**: US-000a
-- **Funcionalidad**: Configurar FastAPI, SQLModel, Alembic, rate limiting (slowapi) y dependencias core
-- **Backend**:
-  - `main.py` con CORS middleware, rate limiting middleware, registro de routers
-  - `core/config.py` (lectura de variables de entorno)
-  - `core/database.py` (engine, session factory)
-  - `core/security.py` (hashing, JWT utilities)
-  - `requirements.txt` con todas las dependencias
-- **Testing**: Swagger UI en `/docs` y `/redoc` accesible sin errores
-- **Dependencias**: Change #1
-- **Estimación**: 3-4 horas
+- **Dependencias**: `bootstrap-monorepo`
+- **Orden**: 2
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita la estructura base del monorepo para colocar los archivos Python.
 
 ---
 
-### Change #3: `backend-setup-database-alembic-seed`
+### Change 3: `setup-postgresql-migrations`
+
+- **Funcionalidad**: Configura PostgreSQL, Alembic con migraciones versionadas, crea todas las tablas del ERD v5:
+  - Dominio 1: Usuario, Rol, UsuarioRol, RefreshToken, DireccionEntrega
+  - Dominio 2: Categoria, Producto, Ingrediente, ProductoCategoria, ProductoIngrediente, FormaPago
+  - Dominio 3: EstadoPedido, Pedido, DetallePedido, HistorialEstadoPedido, Pago
+
+  Incluye: campos de auditoría (creado_en, actualizado_en), soft delete (eliminado_en), FK referenciales, constraints CHECK, tipos especiales (INTEGER[], DECIMAL), campos snapshot.
 
 - **Historias**: US-000b
-- **Funcionalidad**: PostgreSQL, Alembic config, migraciones y seed data obligatorio
-- **Backend**:
-  - `alembic/` con directorio de versiones vacío
-  - Modelos SQLModel completos (todas las entidades del ERD v5)
-  - Script `app/db/seed.py` que carga roles, estados de pedido, formas de pago y admin inicial
-  - Primera migración autogenerada con `alembic revision --autogenerate`
-- **Testing**:
-  - `alembic upgrade head` sin errores
-  - `python -m app.db.seed` carga datos iniciales
-  - Seed es idempotente: ejecutar 2 veces no duplica datos
-- **Dependencias**: Change #2
-- **Estimación**: 4-5 horas
+- **Dependencias**: `setup-backend-core`
+- **Orden**: 3
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita los modelos SQLModel definidos en la estructura backend.
 
 ---
 
-### Change #4: `frontend-setup-react-vite-dependencies`
+### Change 4: `seed-catalogs-and-admin`
+
+- **Funcionalidad**: Script seed Python idempotente (`python -m app.db.seed`) que carga una sola vez:
+  - **Roles** (4): ADMIN (1), STOCK (2), PEDIDOS (3), CLIENT (4)
+  - **Estados de Pedido** (6): PENDIENTE (1), CONFIRMADO (2), EN_PREPARACIÓN (3), EN_CAMINO (4), ENTREGADO (5), CANCELADO (6)
+  - **Formas de Pago** (3): MERCADOPAGO, EFECTIVO, TRANSFERENCIA (todas activas)
+  - **Usuario Admin**: admin@foodstore.com con rol ADMIN, contraseña configurable por variable de entorno
+
+  Script usa `INSERT ... ON CONFLICT DO NOTHING` para idempotencia.
+
+- **Historias**: US-000b (continuación)
+- **Dependencias**: `setup-postgresql-migrations`
+- **Orden**: 4
+- **Duración**: ~2 horas
+
+**Por qué**: Necesita las tablas ya creadas por migraciones.
+
+---
+
+### Change 5: `setup-frontend-core`
+
+- **Funcionalidad**: Configura React+TypeScript+Vite:
+  - Instalación de dependencias: react, react-dom, react-router-dom, @tanstack/react-query, @tanstack/react-form, zustand, axios, recharts, tailwindcss, @mercadopago/sdk-react
+  - Estructura FSD inicial: `app/`, `pages/`, `widgets/`, `features/`, `entities/`, `shared/`
+  - Tailwind CSS configurado con PostCSS
+  - Vite con modo dev en puerto 5173
+  - TypeScript en modo strict (`strict: true`)
+  - `.env.example` con variables Vite: `VITE_API_BASE_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`
 
 - **Historias**: US-000c
-- **Funcionalidad**: React + TypeScript + Vite + librerías core (TanStack Query, TanStack Form, Zustand, Axios, Tailwind)
-- **Frontend**:
-  - `vite.config.ts` (React plugin, SWC fast refresh)
-  - `tsconfig.json` (strict: true)
-  - `tailwind.config.js` + PostCSS
-  - `package.json` con todas las dependencias
-  - `.env.example` con `VITE_API_BASE_URL` y `VITE_MERCADOPAGO_PUBLIC_KEY`
-- **Testing**:
-  - `npm install` sin errores
-  - `npm run dev` arranca en puerto 5173
-  - Verificar TypeScript en modo estricto
-- **Dependencias**: Change #1
-- **Estimación**: 2-3 horas
+- **Dependencias**: `bootstrap-monorepo`
+- **Orden**: 5
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita la carpeta `/frontend` base del monorepo.
 
 ---
 
-### Change #5: `backend-patterns-infrastructure-base`
+### Change 6: `implement-base-patterns`
+
+- **Funcionalidad**: Implementa patrones transversales del backend sin los cuales nada más puede funcionar:
+  - **BaseRepository[T]** genérico: métodos `get_by_id()`, `list_all(skip, limit)`, `count()`, `create()`, `update()`, `soft_delete()`, `hard_delete()`. Excluye registros con `eliminado_en IS NOT NULL` por defecto.
+  - **UnitOfWork** como async context manager (`async with UnitOfWork() as uow`): abre sesión al entrar, expone repos como atributos (`uow.usuarios`, `uow.productos`, etc.), commits automático o rollback en error.
+  - **Dependencias FastAPI**: `get_current_user()` que extrae JWT del header, decodifica y valida, inyecta el Usuario; `require_role(roles: list[str])` factory que verifica roles.
+  - **Middleware RFC 7807**: formatea excepciones HTTP con estructura estándar (type, title, status, detail, instance).
 
 - **Historias**: US-000d
-- **Funcionalidad**: BaseRepository genérico, Unit of Work, dependencias de FastAPI (get_current_user, require_role), error handling RFC 7807
-- **Backend**:
-  - `core/patterns.py`: BaseRepository[T] genérico con CRUD base
-  - `core/uow.py`: Unit of Work como context manager (`async with`)
-  - `core/dependencies.py`: get_current_user, require_role factory
-  - `core/exceptions.py`: HTTPException handlers RFC 7807
-- **Testing**:
-  - UoW entra y sale sin excepciones ✓
-  - UoW rollback en error ✓
-  - require_role lanza 403 ✓
-  - Errores son RFC 7807 ✓
-- **Dependencias**: Change #3
-- **Estimación**: 5-6 horas (patrón complejo)
+- **Dependencias**: `setup-backend-core`, `setup-postgresql-migrations`
+- **Orden**: 6
+- **Duración**: ~5 horas
+
+**Por qué**: BLOQUEANTE. Casi todas las historias posteriores dependen de estos patrones.
 
 ---
 
-### Change #6: `frontend-zustand-stores-setup`
+### Change 7: `setup-zustand-stores`
+
+- **Funcionalidad**: Implementa 4 stores de Zustand con tipos TypeScript estrictos:
+  - **authStore**: estado (accessToken, refreshToken, user, isAuthenticated), acciones (login, logout, updateTokens), selectores (hasRole), persistencia en localStorage, clave `food-store-auth`
+  - **cartStore**: estado (items[] con producto_id, cantidad, personalizacion), acciones (addItem, removeItem, updateQuantity, clearCart), selectores (totalItems, totalPrice), persistencia, clave `food-store-cart`
+  - **paymentStore**: estado (checkoutStep, preferenceId, paymentStatus, error), acciones (startCheckout, setPreference, updatePaymentStatus, resetPayment), SIN persistencia (ephemeral)
+  - **uiStore**: estado (theme light/dark, sidebarOpen, toasts), persistencia selectiva (solo theme), acciones (toggleTheme, toggleSidebar)
+
+  Todos con suscripción por slice para evitar re-renders innecesarios.
 
 - **Historias**: US-000e
-- **Funcionalidad**: Configurar los 4 stores de Zustand (authStore, cartStore, paymentStore, uiStore) con persistencia selectiva
-- **Frontend**:
-  - `shared/stores/authStore.ts`: auth con persist localStorage
-  - `shared/stores/cartStore.ts`: carrito con persist localStorage
-  - `shared/stores/paymentStore.ts`: estado de pago SIN persist
-  - `shared/stores/uiStore.ts`: UI global SIN persist
-- **Testing**:
-  - Verificar persistencia: localStorage tiene claves correctas
-  - Verificar que authStore solo guarda tokens (no user completo)
-  - Verificar que cartStore persiste items
-- **Dependencias**: Change #4
-- **Estimación**: 3 horas
+- **Dependencias**: `setup-frontend-core`
+- **Orden**: 7
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita la estructura y dependencias React+TypeScript.
 
 ---
 
-### Change #7: `frontend-axios-interceptors-setup`
-
-- **Historias**: US-066 (token expirado)
-- **Funcionalidad**: Configurar Axios con interceptores JWT y refresh automático
-- **Frontend**:
-  - `shared/api/axios.ts`: instancia Axios centralizada
-  - Interceptor request: adjunta Authorization: Bearer
-  - Interceptor response: detecta 401, llama refresh, reintenta
-  - Cola de requests pendientes durante refresh
-- **Testing**:
-  - Token expira → interceptor lo detecta → refresh automático
-  - Verificar que usuario NO ve errores intermitentes
-  - Verificar que requests se encolan durante refresh
-- **Dependencias**: Change #6
-- **Estimación**: 3-4 horas
-
----
-
-## SPRINT 1: Autenticación y Autorización
-
-### Change #8: `auth-user-registration`
-
-- **Historias**: US-001
-- **Funcionalidad**: Registro de cliente con validaciones y asignación automática de rol CLIENT
-- **Backend**:
-  - Router: `POST /api/v1/auth/register`
-  - Service: validar email único, hashear contraseña, crear usuario con rol CLIENT
-  - Repository: UserRepository.create()
-- **Frontend**: (será en otro change)
-- **Validaciones**: RN-AU01, RN-AU07, RN-DA04
-- **Testing**:
-  - Email duplicado → error 409
-  - Contraseña < 8 caracteres → error 422
-  - Rol CLIENT asignado automáticamente ✓
-- **Dependencias**: Change #5
-- **Estimación**: 2-3 horas
-
----
-
-### Change #9: `auth-user-login-rate-limiting`
-
-- **Historias**: US-002, US-073
-- **Funcionalidad**: Login con JWT + refresh token + rate limiting (5 intentos / 15 min)
-- **Backend**:
-  - Router: `POST /api/v1/auth/login`
-  - Service: validar email/contraseña, generar access + refresh tokens
-  - Rate limiting con slowapi en el router
-  - RefreshTokenRepository: crear registro en tabla RefreshToken
-- **Validaciones**: RN-AU02, RN-AU06, RN-AU08
-- **Testing**:
-  - 5 logins fallidos → 6to intento = 429 ✓
-  - Token expira en 30 min ✓
-  - Refresh token expira en 7 días ✓
-  - No diferencia "email no existe" vs "contraseña incorrecta" ✓
-- **Dependencias**: Change #8
-- **Estimación**: 3-4 horas
-
----
-
-### Change #10: `auth-token-refresh-rotation`
-
-- **Historias**: US-003
-- **Funcionalidad**: Endpoint refresh con rotación de tokens y detección de replay attacks
-- **Backend**:
-  - Router: `POST /api/v1/auth/refresh`
-  - Service: validar refresh token, revocarlo, emitir nuevos tokens
-  - Si detecta reuso (replay) → revocar TODOS los tokens del usuario (RN-AU05)
-- **Validaciones**: RN-AU04, RN-AU05
-- **Testing**:
-  - Token válido → nuevo access + refresh ✓
-  - Token expirado → 401 ✓
-  - Token reusado → todos revocados ✓
-- **Dependencias**: Change #9
-- **Estimación**: 2-3 horas
-
----
-
-### Change #11: `auth-logout`
-
-- **Historias**: US-004
-- **Funcionalidad**: Logout revocando refresh token
-- **Backend**:
-  - Router: `POST /api/v1/auth/logout`
-  - Service: marcar RefreshToken.revoked_at
-- **Frontend**: (será en otro change)
-- **Validaciones**: RN-AU04
-- **Testing**: RefreshToken marcado como revocado ✓
-- **Dependencias**: Change #10
-- **Estimación**: 1 hora
-
----
-
-### Change #12: `auth-rbac-roles`
-
-- **Historias**: US-005, US-006
-- **Funcionalidad**: RBAC con 4 roles, asignación de roles por admin, protección de rutas
-- **Backend**:
-  - Router: `PUT /api/v1/admin/users/:id/roles` (solo ADMIN)
-  - Service: validar que ADMIN no se quite a sí mismo siendo único, asignar roles
-  - require_role() dependency que verifica roles del usuario
-  - Todas las rutas protegidas con @require_role()
-- **Validaciones**: RN-RB01-RB10
-- **Testing**:
-  - Rol insuficiente → 403 ✓
-  - Sin token → 401 ✓
-  - Último ADMIN intenta quitarse ADMIN → error ✓
-- **Dependencias**: Change #5, Change #9
-- **Estimación**: 3-4 horas
-
----
-
-### Change #13: `frontend-auth-ui-forms`
-
-- **Historias**: US-001, US-002, US-004
-- **Funcionalidad**: Páginas de login, registro y logout con TanStack Form
-- **Frontend**:
-  - `pages/LoginPage.tsx`
-  - `pages/RegisterPage.tsx`
-  - `features/auth/LoginForm.tsx` + validaciones
-  - `features/auth/RegisterForm.tsx` + validaciones
-  - `features/auth/ProtectedRoute.tsx` HOC para rutas privadas
-  - Integración con authStore
-- **Testing**:
-  - Formularios validan en frontend
-  - Login/registro funciona end-to-end
-  - Token se guarda en authStore
-- **Dependencias**: Change #6, Change #9
-- **Estimación**: 4-5 horas
-
----
-
-### Change #14: `frontend-navigation-rbac`
-
-- **Historias**: US-075, US-076
-- **Funcionalidad**: Navegación adaptada al rol (Sidebar/NavBar renderiza menú según rol)
-- **Frontend**:
-  - `widgets/Navigation.tsx`: renderiza menú según roles del authStore
-  - `widgets/Sidebar.tsx`: panel lateral con opciones por rol
-  - Route guards en `app/AppRoutes.tsx`
-- **Testing**:
-  - CLIENT ve: Catálogo, Mi Carrito, Mis Pedidos, Perfil
-  - STOCK ve: Productos, Categorías, Stock
-  - PEDIDOS ve: Panel Pedidos
-  - ADMIN ve: todo
-- **Dependencias**: Change #13
-- **Estimación**: 2-3 horas
-
----
-
-### Change #15: `frontend-error-handling-global`
-
-- **Historias**: US-067
-- **Funcionalidad**: Error boundaries y manejo global de errores HTTP
-- **Frontend**:
-  - `shared/components/ErrorBoundary.tsx`
-  - Interceptor Axios que mapea códigos a mensajes
-  - Toast system para notificaciones
-- **Testing**: Error 400 → muestra detalles de validación, 403 → "Sin permisos", etc.
-- **Dependencias**: Change #7
-- **Estimación**: 2 horas
-
----
-
-## SPRINT 2: Catálogo de Productos
-
-### Change #16: `catalog-categories-hierarchical`
-
-- **Historias**: US-007, US-008, US-009, US-010
-- **Funcionalidad**: CRUD de categorías con jerarquía recursiva (padre-hijo) y validación de ciclos
-- **Backend**:
-  - Router: POST/PUT/GET/DELETE `/api/v1/categorias`
-  - Service: validar padre-hijo, detectar ciclos con CTE
-  - CategoriaRepository: buscar por parent_id, validar ciclos antes de actualizar
-  - Soft delete: eliminado_en
-- **Validaciones**: RN-CA01, RN-CA02, RN-CA03
-- **Testing**:
-  - Crear subcategoría ✓
-  - Intentar crear ciclo (A padre B, B padre A) → error ✓
-  - Listar árbol anidado ✓
-  - Soft delete ✓
-- **Dependencias**: Change #12 (RBAC)
-- **Estimación**: 4-5 horas (CTE recursiva)
-
----
-
-### Change #17: `catalog-ingredients-allergens`
-
-- **Historias**: US-011, US-012, US-013, US-014
-- **Funcionalidad**: CRUD de ingredientes con flag de alérgeno
-- **Backend**:
-  - Router: POST/PUT/GET/DELETE `/api/v1/ingredientes`
-  - Service: validar unicidad de nombre
-  - IngredienteRepository
-- **Validaciones**: RN-CA07
-- **Testing**: Crear ingrediente con es_alergeno=true ✓
-- **Dependencias**: Change #12
-- **Estimación**: 2 horas
-
----
-
-### Change #18: `catalog-products-crud`
-
-- **Historias**: US-015, US-020, US-021, US-022
-- **Funcionalidad**: CRUD de productos con precio (DECIMAL), stock y disponibilidad
-- **Backend**:
-  - Router: POST/PUT/DELETE/PATCH `/api/v1/productos`
-  - Service: validar precio >= 0, stock >= 0
-  - ProductoRepository: actualizar_stock() atómico
-  - Soft delete: eliminado_en
-- **Validaciones**: RN-CA04, RN-CA05, RN-CA09
-- **Testing**:
-  - Crear producto con precio decimal ✓
-  - Actualizar stock atomicamente ✓
-  - Soft delete ✓
-  - Stock nunca negativo ✓
-- **Dependencias**: Change #12
-- **Estimación**: 3-4 horas
-
----
-
-### Change #19: `catalog-product-categorias-association`
-
-- **Historias**: US-016
-- **Funcionalidad**: Asociar productos a múltiples categorías (M2M)
-- **Backend**:
-  - Tabla pivote: ProductoCategoria
-  - Router: PUT `/api/v1/productos/:id/categorias`
-  - Service: asignar/desasignar categorías
-- **Validaciones**: RN-CA06
-- **Testing**: Un producto en múltiples categorías ✓
-- **Dependencias**: Change #16, Change #18
-- **Estimación**: 2 horas
-
----
-
-### Change #20: `catalog-product-ingredientes-association`
-
-- **Historias**: US-017
-- **Funcionalidad**: Asociar ingredientes a productos (M2M) con flag removible
-- **Backend**:
-  - Tabla pivote: ProductoIngrediente (con es_removible)
-  - Router: PUT `/api/v1/productos/:id/ingredientes`
-  - Service: validar que ingredientes existan
-- **Validaciones**: RN-CA07
-- **Testing**: Un producto con múltiples ingredientes, algunos alergenos ✓
-- **Dependencias**: Change #17, Change #18
-- **Estimación**: 2 horas
-
----
-
-### Change #21: `catalog-products-public-listing`
-
-- **Historias**: US-018, US-019
-- **Funcionalidad**: Endpoints públicos de listado y detalle (sin autenticación)
-- **Backend**:
-  - Router: GET `/api/v1/productos` (paginado, con filtros)
-  - Router: GET `/api/v1/productos/:id` (detalle completo)
-  - Filtros: categoría, nombre, rango de precio, disponible
-  - Devuelve solo disponible=true, eliminado_en IS NULL
-- **Validaciones**: RN-CA08, RN-DA07
-- **Testing**:
-  - Listado paginado ✓
-  - Filtro por categoría ✓
-  - Búsqueda por nombre (ILIKE) ✓
-  - Detalle con ingredientes y alergenos ✓
-- **Dependencias**: Change #19, Change #20
-- **Estimación**: 3 horas
-
----
-
-### Change #22: `catalog-allergen-filtering`
-
-- **Historias**: US-023
-- **Funcionalidad**: Filtrar productos por alergenos a excluir
-- **Backend**:
-  - Query param: `?excluirAlergenos=1,3,7`
-  - NOT EXISTS subquery en repositorio
-- **Testing**: Excluir alergeno → producto no aparece ✓
-- **Dependencias**: Change #21
-- **Estimación**: 1-2 horas
-
----
-
-### Change #23: `frontend-catalog-grid`
-
-- **Historias**: US-018, US-019, US-023
-- **Funcionalidad**: Página de catálogo con grid, filtros, búsqueda y paginación
-- **Frontend**:
-  - `pages/CatalogPage.tsx`
-  - `features/catalog/ProductGrid.tsx`: grid con skeleton loaders
-  - `features/catalog/ProductCard.tsx`: tarjeta individual
-  - `features/catalog/FilterBar.tsx`: filtros por categoría, precio, alérgenos
-  - Usar TanStack Query para fetching y caché
-- **Testing**:
-  - Grid renderiza productos ✓
-  - Filtros funcionan ✓
-  - Paginación funciona ✓
-  - Debounce en búsqueda ✓
-- **Dependencias**: Change #21, Change #22
-- **Estimación**: 5-6 horas
-
----
-
-### Change #24: `frontend-product-detail-modal`
-
-- **Historias**: US-019
-- **Funcionalidad**: Modal detalle de producto con ingredientes y botón "Agregar al carrito"
-- **Frontend**:
-  - `features/catalog/ProductDetailModal.tsx`
-  - Mostrar ingredientes con badges de alérgenos
-  - Botón "Agregar al carrito"
-- **Testing**: Modal abre, muestra datos correctos, botón agrega al carrito ✓
-- **Dependencias**: Change #23
-- **Estimación**: 2-3 horas
-
----
-
-## SPRINT 3: Dirección de Entrega
-
-### Change #25: `addresses-crud`
-
-- **Historias**: US-024, US-025, US-026, US-027, US-028
-- **Funcionalidad**: CRUD de direcciones de entrega por usuario
-- **Backend**:
-  - Router: POST/PUT/GET/DELETE `/api/v1/direcciones`
-  - Service: validar que user solo acceda a sus propias direcciones
-  - DireccionRepository: listar_por_usuario()
-  - PATCH `/api/v1/direcciones/:id/principal` para marcar como predeterminada
-- **Validaciones**: RN-DI01, RN-DI02, RN-DI03, RN-RB05
-- **Testing**:
-  - Usuario solo ve sus direcciones ✓
-  - Una dirección principal a la vez ✓
-  - Primera dirección es principal automáticamente ✓
-  - Soft delete ✓
-- **Dependencias**: Change #12 (RBAC)
-- **Estimación**: 3-4 horas
-
----
-
-### Change #26: `frontend-addresses-ui`
-
-- **Historias**: US-024, US-025, US-026, US-027
-- **Funcionalidad**: Página de direcciones con CRUD
-- **Frontend**:
-  - `pages/AddressesPage.tsx`
-  - `features/addresses/AddressList.tsx`
-  - `features/addresses/AddressForm.tsx` (crear/editar)
-  - `features/addresses/AddressModal.tsx`
-- **Testing**: CRUD funciona, seleccionar dirección principal ✓
-- **Dependencias**: Change #25
-- **Estimación**: 4-5 horas
-
----
-
-## SPRINT 4: Carrito y Gestión del Estado Cliente
-
-### Change #27: `cart-store-persistence`
-
-- **Historias**: US-029, US-030, US-034
-- **Funcionalidad**: Carrito persistente en localStorage con personalización (exclusión de ingredientes)
-- **Frontend**:
-  - Ya existe cartStore (Change #6), aquí refinamos:
-  - Acciones: addItem(), removeItem(), updateQuantity(), personalizar()
-  - Selectores: totalItems(), subtotal(), totalPrice()
-  - Persistencia completa en localStorage
-- **Validaciones**: RN-CR01, RN-CR02, RN-CR03, RN-CR04, RN-CR05
-- **Testing**:
-  - Agregar producto al carrito ✓
-  - Cerrar navegador → carrito persiste ✓
-  - Mismo producto 2 veces → cantidad incrementa ✓
-  - Personalización (excluir ingrediente) ✓
-- **Dependencias**: Change #6
-- **Estimación**: 2-3 horas
-
----
-
-### Change #28: `frontend-cart-ui-drawer`
-
-- **Historias**: US-029, US-031, US-032, US-033, US-034
-- **Funcionalidad**: Drawer/sidebar del carrito con resumen y botón checkout
-- **Frontend**:
-  - `features/cart/CartDrawer.tsx`
-  - `features/cart/CartItem.tsx`: línea del carrito
-  - `features/cart/CartSummary.tsx`: total, costos
-  - Botón "Ir al Checkout"
-- **Testing**: Drawer abre, muestra items, botón checkout funciona ✓
-- **Dependencias**: Change #27
-- **Estimación**: 3-4 horas
-
----
-
-## SPRINT 5: Pedidos (Dominio Central)
-
-### Change #29: `orders-fsm-state-machine`
-
-- **Historias**: US-035, US-039, US-040, US-041, US-042, US-043, US-044
-- **Funcionalidad**: Máquina de estados del pedido (PENDIENTE → CONFIRMADO → EN_PREP → EN_CAMINO → ENTREGADO)
-- **Backend**:
-  - Tabla EstadoPedido (ya en seed)
-  - Service: validar transiciones FSM
-  - Mapa de transiciones permitidas:
-    - PENDIENTE → CONFIRMADO (automática en pago aprobado)
-    - CONFIRMADO → EN_PREP (por PEDIDOS/ADMIN)
-    - EN_PREP → EN_CAMINO (por PEDIDOS/ADMIN)
-    - EN_CAMINO → ENTREGADO (por PEDIDOS/ADMIN)
-    - PENDIENTE/CONFIRMADO/EN_PREP → CANCELADO (con restricciones por rol)
-  - HistorialEstadoPedido append-only (solo INSERT)
-- **Validaciones**: RN-FS01-RN-FS09
-- **Testing**:
-  - No se permite salto (PENDIENTE → EN_PREP) → error ✓
-  - No se permite retroceso ✓
-  - Estados terminales no permiten transiciones ✓
-- **Dependencias**: Change #3 (modelos en BD)
-- **Estimación**: 3-4 horas
-
----
-
-### Change #30: `orders-creation-atomic-uow`
-
-- **Historias**: US-035, US-036, US-037, US-038
-- **Funcionalidad**: Crear pedido de forma atómica con Unit of Work (validaciones, snapshots, stock)
-- **Backend**:
-  - Router: POST `/api/v1/pedidos` (solo CLIENT)
-  - Service.crear_pedido():
-    1. Validar usuario y dirección
-    2. Validar forma de pago
-    3. Validar productos disponibles y stock suficiente (SELECT FOR UPDATE)
-    4. Calcular snapshots de precio y nombre
-    5. Calcular snapshots de dirección
-    6. Crear Pedido en estado PENDIENTE
-    7. Crear DetallePedido por cada item con snapshots
-    8. Crear HistorialEstadoPedido inicial (estado_desde=NULL)
-  - TODO dentro de contexto UoW: si algo falla → ROLLBACK
-- **Validaciones**: RN-PE01-RN-PE08
-- **Testing**:
-  - Stock insuficiente → no se crea nada ✓
-  - Snapshots se guardan ✓
-  - Historial registra creación ✓
-  - Transacción atómica ✓
-- **Dependencias**: Change #5 (UoW), Change #29 (FSM)
-- **Estimación**: 5-6 horas (complejo)
-
----
-
-### Change #31: `orders-stock-decrement-confirm`
-
-- **Historias**: US-039
-- **Funcionalidad**: Decrementar stock al confirmar pedido (PENDIENTE → CONFIRMADO)
-- **Backend**:
-  - Service: avanzar_estado() detecta PENDIENTE → CONFIRMADO
-  - Decrementa stock atomicamente por cada producto
-  - Si decremento falla en alguno → ROLLBACK de TODA la operación
-- **Validaciones**: RN-FS03, RN-FS04
-- **Testing**:
-  - Confirmar pedido → stock decrementado ✓
-  - Stock insuficiente en segundo producto → ROLLBACK, stock no cambia ✓
-- **Dependencias**: Change #30
-- **Estimación**: 2-3 horas
-
----
-
-### Change #32: `orders-stock-restore-cancel`
-
-- **Historias**: US-043
-- **Funcionalidad**: Restaurar stock al cancelar un pedido confirmado
-- **Backend**:
-  - Service: avanzar_estado() detecta → CANCELADO
-  - Si pedido estaba en CONFIRMADO o EN_PREP: restaura stock
-  - Operación inversa a RN-FS03
-- **Validaciones**: RN-FS05, RN-RB08 (solo ADMIN desde EN_PREP)
-- **Testing**:
-  - Cancelar pedido confirmado → stock restaurado ✓
-  - Cancelar desde EN_PREP sin ser ADMIN → 403 ✓
-- **Dependencias**: Change #31
-- **Estimación**: 2 horas
-
----
-
-### Change #33: `orders-list-and-detail-endpoints`
-
-- **Historias**: US-018 (en contexto de pedidos), US-049, US-050, US-051
-- **Funcionalidad**: Endpoints para listar y ver detalle de pedidos (con restricciones por rol)
-- **Backend**:
-  - Router: GET `/api/v1/pedidos` (paginado, filtro por estado)
-    - CLIENT: solo sus pedidos
-    - PEDIDOS/ADMIN: todos
-  - Router: GET `/api/v1/pedidos/:id` (detalle completo)
-    - Propietario o ADMIN/PEDIDOS
-  - Incluir: items con snapshots, historial ordenado, pagos asociados
-- **Validaciones**: RN-RB05, RN-DA07
-- **Testing**:
-  - CLIENT ve solo sus pedidos ✓
-  - ADMIN ve todos ✓
-  - Detalle incluye historial y pagos ✓
-- **Dependencias**: Change #29, Change #30
-- **Estimación**: 3-4 horas
-
----
-
-### Change #34: `orders-state-transitions-endpoints`
-
-- **Historias**: US-040, US-041, US-042, US-043, US-044
-- **Funcionalidad**: Endpoints para avanzar estado y cancelar pedido
-- **Backend**:
-  - Router: PATCH `/api/v1/pedidos/:id/estado` (body: {nuevo_estado, motivo})
-  - Router: PATCH `/api/v1/pedidos/:id/cancelar` (body: {motivo})
-  - Service valida transiciones FSM y permisos por rol
-  - Historial append-only registra cada transición
-- **Validaciones**: RN-FS01-RN-FS09, RN-RB08
-- **Testing**:
-  - Avanzar estado válido ✓
-  - Intento de salto → error ✓
-  - Historial se actualiza ✓
-- **Dependencias**: Change #29, Change #31, Change #32
-- **Estimación**: 3-4 horas
-
----
-
-### Change #35: `frontend-orders-list-page`
-
-- **Historias**: US-049, US-050, US-051
-- **Funcionalidad**: Página de pedidos con listado paginado y filtros
-- **Frontend**:
-  - `pages/OrdersPage.tsx`
-  - `features/orders/OrdersList.tsx`: tabla/grid paginado
-  - Filtro por estado
-  - Columnas: ID, fecha, estado, total, acciones
-- **Testing**: Listado paginado, filtros funcionan ✓
-- **Dependencias**: Change #33
-- **Estimación**: 3-4 horas
-
----
-
-### Change #36: `frontend-order-detail-page`
-
-- **Historias**: US-050
-- **Funcionalidad**: Página de detalle de pedido con historial completo
-- **Frontend**:
-  - `pages/OrderDetailPage.tsx`
-  - `features/orders/OrderDetail.tsx`: información completa
-  - `features/orders/OrderItemsList.tsx`: líneas del pedido
-  - `features/orders/OrderTimeline.tsx`: historial de estados con timestamps
-  - `features/orders/PaymentStatus.tsx`: estado del pago
-- **Testing**: Detalle completo visible, timeline muestra transiciones ✓
-- **Dependencias**: Change #35
-- **Estimación**: 4-5 horas
-
----
-
-## SPRINT 6: Pagos (MercadoPago)
-
-### Change #37: `payments-mercadopago-integration`
-
-- **Historias**: US-045, US-046, US-047, US-048
-- **Funcionalidad**: Integración con MercadoPago Checkout API (crear pago, webhook IPN)
-- **Backend**:
-  - Router: POST `/api/v1/pagos/crear` (crear orden en MP)
-  - Router: POST `/api/v1/pagos/webhook` (endpoint IPN)
-  - Service: crear preferencia en MP, generar idempotency_key
-  - Webhook: recibe notificación, valida firma, obtiene estado real del pago, actualiza tabla Pago
-  - Si pago approved: avanza pedido a CONFIRMADO automáticamente (RN-PA05)
-  - Tabla Pago con campos: mp_payment_id, mp_status, external_reference, idempotency_key
-- **Validaciones**: RN-PA01-RN-PA09
-- **Testing**:
-  - Crear pago crea registro en tabla Pago ✓
-  - Idempotency_key es único ✓
-  - Webhook aprobado → pedido va a CONFIRMADO ✓
-  - Webhook rechazado → pedido se queda en PENDIENTE ✓
-- **Dependencias**: Change #30 (crear pedido)
-- **Estimación**: 6-8 horas (integraciones externas)
-
----
-
-### Change #38: `payments-multiple-attempts-per-order`
-
-- **Historias**: US-048
-- **Funcionalidad**: Un pedido puede tener múltiples intentos de pago (relación 1:N)
-- **Backend**:
-  - Tabla Pago ya soporta esto (1:N con Pedido)
-  - Router: GET `/api/v1/pagos/pedido/:id` para ver historial de intentos
-- **Testing**: Múltiples intentos visibles ✓
-- **Dependencias**: Change #37
-- **Estimación**: 1 hora
-
----
-
-### Change #39: `frontend-checkout-card-payment`
-
-- **Historias**: US-045, US-046, US-047
-- **Funcionalidad**: Página de checkout con formulario de tarjeta (SDK MercadoPago)
-- **Frontend**:
-  - `pages/CheckoutPage.tsx`
-  - `features/checkout/CheckoutForm.tsx`: direcciones, resumen, botón pagar
-  - `features/checkout/CardPayment.tsx`: formulario tarjeta con @mercadopago/sdk-react
-  - Flujo: seleccionar dirección → revisar items → ingresar tarjeta → crear pago
-- **Testing**:
-  - Tarjeta sandbox aprobada → pago creado ✓
-  - Tarjeta sandbox rechazada → error mostrado ✓
-- **Dependencias**: Change #25 (direcciones), Change #27 (carrito), Change #37 (pagos)
-- **Estimación**: 5-6 horas
-
----
-
-### Change #40: `frontend-payment-status-polling`
-
-- **Historias**: US-046, US-047
-- **Funcionalidad**: Polling de estado de pago (cada 2-3 segundos)
-- **Frontend**:
-  - `features/checkout/PaymentPolling.tsx`: hook que hace polling
-  - Mostrar: pendiente, aprobado, rechazado
-  - Si aprobado → redirigir a página de éxito
-  - Si rechazado → mostrar error + botón reintentar
-- **Testing**: Polling detecta cambio de estado ✓
-- **Dependencias**: Change #39
-- **Estimación**: 2-3 horas
-
----
-
-## SPRINT 7: Perfil de Usuario
-
-### Change #41: `profile-user-view-and-edit`
-
-- **Historias**: US-061, US-062, US-063
-- **Funcionalidad**: Ver y editar perfil del cliente
-- **Backend**:
-  - Router: GET `/api/v1/perfil` (usuario autenticado)
-  - Router: PUT `/api/v1/perfil` (actualizar nombre, email, teléfono, contraseña)
-  - Service: validar email único, hashear contraseña nueva
-- **Testing**: Perfil muestra datos correctos, edición funciona ✓
-- **Dependencias**: Change #12 (RBAC)
-- **Estimación**: 2-3 horas
-
----
-
-### Change #42: `frontend-profile-page`
-
-- **Historias**: US-061, US-062, US-063
-- **Funcionalidad**: Página de perfil con CRUD
-- **Frontend**:
-  - `pages/ProfilePage.tsx`
-  - `features/profile/ProfileForm.tsx`
-  - `features/profile/ChangePasswordForm.tsx`
-- **Testing**: Ediciones persisten ✓
-- **Dependencias**: Change #41
-- **Estimación**: 2-3 horas
-
----
-
-## SPRINT 8: Panel de Administración
-
-### Change #43: `admin-dashboard-metrics`
-
-- **Historias**: US-052, US-065
-- **Funcionalidad**: Dashboard con métricas KPI (recharts)
-- **Backend**:
-  - Router: GET `/api/v1/admin/metricas` (solo ADMIN)
-  - Service: calcular: total de pedidos, ventas totales, productos populares, estado de pedidos
-  - Respuesta: datos para gráficos
-- **Frontend**:
-  - `pages/AdminDashboard.tsx`
-  - `features/admin/MetricsCards.tsx`: cards con KPIs
-  - `features/admin/SalesChart.tsx`: gráfico de ventas por fecha
-  - `features/admin/OrderStatusChart.tsx`: gráfico de estados
-  - `features/admin/TopProductsChart.tsx`: productos más vendidos
-  - Usar recharts
-- **Testing**: Dashboard carga, gráficos renderizan datos ✓
-- **Dependencias**: Change #12 (RBAC), Change #30 (pedidos)
-- **Estimación**: 4-5 horas
-
----
-
-### Change #44: `admin-users-management`
-
-- **Historias**: US-054
-- **Funcionalidad**: CRUD de usuarios y asignación de roles
-- **Backend**:
-  - Router: GET/POST/PUT/DELETE `/api/v1/admin/usuarios`
-  - Service: validar que solo ADMIN hace operaciones
-- **Frontend**:
-  - `pages/AdminUsersPage.tsx`
-  - `features/admin/UsersList.tsx`: tabla de usuarios
-  - `features/admin/UserForm.tsx`: crear/editar usuario
-  - `features/admin/RoleAssignment.tsx`: selector de roles
-- **Testing**: CRUD funciona, roles asignados correctamente ✓
-- **Dependencias**: Change #12 (RBAC)
-- **Estimación**: 4-5 horas
-
----
-
-### Change #45: `admin-products-management`
-
-- **Historias**: US-055, US-056, US-057, US-064
-- **Funcionalidad**: CRUD de productos desde el panel (con relaciones)
-- **Backend**: Ya existe en Change #18, Change #19, Change #20
-- **Frontend**:
-  - `pages/AdminProductsPage.tsx`
-  - `features/admin/ProductsList.tsx`: tabla paginada
-  - `features/admin/ProductForm.tsx`: crear/editar
-  - `features/admin/CategorySelector.tsx`: multi-select categorías
-  - `features/admin/IngredientSelector.tsx`: multi-select ingredientes
-  - Soft delete: checkbox para mostrar eliminados
-- **Testing**: Crear/editar/eliminar producto, relaciones asignadas ✓
-- **Dependencies**: Change #18, Change #19, Change #20
-- **Estimación**: 5-6 horas
-
----
-
-### Change #46: `admin-categories-management`
-
-- **Historias**: US-058, US-059
-- **Funcionalidad**: CRUD de categorías desde el panel
-- **Backend**: Ya existe en Change #16
-- **Frontend**:
-  - `pages/AdminCategoriesPage.tsx`
-  - `features/admin/CategoriesList.tsx`: árbol jerárquico
-  - `features/admin/CategoryForm.tsx`: crear/editar
-  - Parent selector con validación de ciclos
-- **Testing**: Crear/editar categoría, árbol se actualiza ✓
-- **Dependencias**: Change #16
-- **Estimación**: 3-4 horas
-
----
-
-### Change #47: `admin-stock-management`
-
-- **Historias**: US-060
-- **Funcionalidad**: Panel de gestión de stock (actualizar cantidades)
-- **Backend**:
-  - Router: PATCH `/api/v1/admin/productos/:id/stock` (solo ADMIN/STOCK)
-- **Frontend**:
-  - `pages/AdminStockPage.tsx`
-  - `features/admin/StockTable.tsx`: tabla editable con cantidades
-  - Edición inline: click en cantidad → input → Enter para guardar
-- **Testing**: Editar cantidad, persiste correctamente ✓
-- **Dependencies**: Change #18, Change #12 (RBAC)
-- **Estimación**: 3 horas
-
----
-
-### Change #48: `admin-orders-management-fsm`
-
-- **Historias**: US-041, US-042, US-043
-- **Funcionalidad**: Panel para gestionar pedidos (ver listado, avanzar estados, cancelar)
-- **Frontend**:
-  - `pages/AdminOrdersPage.tsx`
-  - `features/admin/OrdersManagementList.tsx`: tabla de pedidos
-  - `features/admin/OrderStateButtons.tsx`: botones para avanzar/cancelar estado
-  - Modal para confirmar cambios con observación opcional
-- **Testing**: Avanzar estado, cancelar pedido, historial se actualiza ✓
-- **Dependencias**: Change #34 (endpoints)
-- **Estimación**: 4-5 horas
-
----
-
-## SPRINT 9: Refinamientos y Calidad
-
-### Change #49: `error-handling-standardization`
+### Change 8: `implement-error-handling`
+
+- **Funcionalidad**: Sistema centralizado de manejo de errores:
+  - **Backend**: Middleware global que captura excepciones, formatea RFC 7807, loguea stack trace en servidor, nunca expone detalles internos al cliente
+  - **Frontend**: Error boundary React que captura errores de componentes, toast global de errores, interceptor Axios que mapea HTTP status codes a mensajes amigables (401 → "Tu sesión expiró", 403 → "No tienes permisos", 404 → "Recurso no encontrado", 429 → "Demasiadas solicitudes", 5xx → "Error interno")
+  - Validaciones: todos los inputs validados en backend con Pydantic schemas
 
 - **Historias**: US-068, US-074
-- **Funcionalidad**: Estandarizar manejo de errores (RFC 7807) y validación de inputs
-- **Backend**:
-  - Exception handlers globales en main.py
-  - Todas las excepciones mapean a RFC 7807
-  - Validación de inputs con Pydantic (ya existe), pero refinar
-  - Sanitización contra XSS: escape de HTML entities en textos
-- **Frontend**:
-  - Error boundary global
-  - Toast con mensajes amigables
-- **Testing**: Error 400 muestra detalles, 403 muestra "Sin permisos" ✓
-- **Dependencias**: Change #5 (UoW), todos los changes anteriores
-- **Estimación**: 2-3 horas
+- **Dependencias**: `setup-backend-core`, `setup-frontend-core`
+- **Orden**: 8
+- **Duración**: ~3 horas
+
+**Por qué**: Transversal pero implementable tras setup core.
 
 ---
 
-### Change #50: `testing-and-documentation`
+---
 
-- **Historias**: Bonus testing
-- **Funcionalidad**: Tests unitarios (pytest) y documentación
-- **Backend**:
-  - `tests/test_auth.py`: login, register, refresh, logout
-  - `tests/test_pedidos.py`: crear pedido, avanzar estado, cancelar
-  - `tests/test_pagos.py`: crear pago, webhook
-  - Cobertura > 60%
-- **Frontend**:
-  - Documentación de componentes con Storybook (opcional)
-  - README completo
-- **Testing**: `pytest` corre, cobertura calculada ✓
+## 🔐 PHASE 1 — AUTENTICACIÓN Y AUTORIZACIÓN (Sprint 1)
+
+_La puerta de entrada al sistema. Sin esto, no hay seguridad._
+
+### Change 9: `implement-auth-register`
+
+- **Funcionalidad**: Endpoint `POST /api/v1/auth/register`:
+  - Recibe: nombre, email, contraseña
+  - Valida: email único (400 si duplicado), contraseña ≥8 caracteres, formato email correcto
+  - Crea usuario: hashea contraseña con bcrypt cost≥12 (salt automático), asigna rol CLIENT automáticamente (no viene del request)
+  - Retorna: access token (30 min), refresh token (7 días), UserResponse con datos
+  - Schema Pydantic: `RegisterRequest`, `UserResponse` (sin password_hash)
+
+- **Historias**: US-001
+- **Dependencias**: `implement-base-patterns`, `seed-catalogs-and-admin`
+- **Orden**: 9
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita BaseRepository, rol CLIENT seedeado, validación centralizada.
+
+---
+
+### Change 10: `implement-auth-login`
+
+- **Funcionalidad**: Endpoint `POST /api/v1/auth/login`:
+  - Recibe: email, contraseña
+  - Valida: email existe y contraseña correcta (bcrypt verify)
+  - Rate limiting: slowapi middleware limitando a 5 intentos cada 15 minutos por IP, responde 429 con header `Retry-After`
+  - Seguridad: respuesta 401 no diferencia "email no existe" de "contraseña incorrecta"
+  - Genera: access token JWT (30 min, contiene userId, email, roles), refresh token UUID (7 días, almacenado en tabla RefreshToken)
+  - Retorna: TokenResponse (access_token, refresh_token, token_type="Bearer", user)
+
+- **Historias**: US-002
+- **Dependencias**: `implement-auth-register`
+- **Orden**: 10
+- **Duración**: ~3 horas
+
+**Por qué**: Depende de usuarios ya creables + tabla RefreshToken.
+
+---
+
+### Change 11: `implement-auth-refresh-logout`
+
+- **Funcionalidad**:
+  - Endpoint `POST /api/v1/auth/refresh`: recibe refresh_token, valida que exista en BD, no esté revocado, no haya expirado; emite nuevo par (access + refresh); marca anterior como revocado; detecta replay attacks y revoca TODOS los tokens del usuario si lo detecta
+  - Endpoint `POST /api/v1/auth/logout`: recibe refresh_token, marca como revocado en BD, frontend limpia tokens del authStore
+  - Rotación de refresh tokens: cada uso genera uno nuevo, anterior se marca revocado
+
+- **Historias**: US-003, US-004
+- **Dependencias**: `implement-auth-login`
+- **Orden**: 11
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita flujo login funcional y tabla RefreshToken.
+
+---
+
+### Change 12: `implement-rbac-system`
+
+- **Funcionalidad**: Sistema de roles RBAC completo:
+  - 4 roles predefinidos (ADMIN, STOCK, PEDIDOS, CLIENT) con IDs estables seedeados
+  - Tabla UsuarioRol (M:M) con restricción UNIQUE (usuario_id, rol_id)
+  - Endpoint `PUT /api/v1/admin/usuarios/:id/roles` que asigna múltiples roles
+  - Validación: solo ADMIN puede asignar/modificar roles
+  - Seguridad: ADMIN no puede quitarse el rol ADMIN a sí mismo si es el último admin
+  - Invalidación de tokens: post-cambio de rol, cliente debe refrescar JWT
+
+- **Historias**: US-005, US-054
+- **Dependencias**: `implement-base-patterns`, `seed-catalogs-and-admin`
+- **Orden**: 12
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita roles ya seedeados, dependencia base patterns.
+
+---
+
+### Change 13: `implement-route-protection`
+
+- **Funcionalidad**: Dependencia `require_role(roles: list[str])` en FastAPI:
+  - Verifica que usuario autenticado posea al menos uno de los roles requeridos
+  - Retorna 401 si sin token válido, 403 si rol insuficiente
+  - Lista blanca de rutas públicas: catálogo (GET /productos), auth (POST /register, /login), categorías públicas
+  - Aplica a todos los endpoints de administración, creación de pedidos, modificación de perfil
+
+- **Historias**: US-006, US-073
+- **Dependencias**: `implement-rbac-system`
+- **Orden**: 13
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita RBAC funcional.
+
+---
+
+### Change 14: `implement-frontend-auth-ui`
+
+- **Funcionalidad**: Interfaz de autenticación:
+  - Página `LoginPage`: formulario con email/contraseña, validación inline, manejo de errores (429 → "Demasiados intentos"), submit actualiza authStore
+  - Página `RegisterPage`: formulario nombre/email/contraseña/teléfono, validación, submit crea usuario y redirige a dashboard
+  - Interceptor Axios: adjunta token del authStore al header `Authorization: Bearer <token>` en cada request
+  - Componente `ProtectedRoute` HOC: verifica autenticación antes de renderizar, redirige a login si no autenticado
+  - Guards de rutas con react-router: rutas públicas vs privadas, lazy loading de módulos por rol
+
+- **Historias**: US-001, US-002 (frontend)
+- **Dependencias**: `setup-zustand-stores`, `implement-error-handling`
+- **Orden**: 14
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita stores Zustand y manejo de errores centralizado.
+
+---
+
+### Change 15: `implement-token-refresh-interceptor`
+
+- **Funcionalidad**: Interceptor Axios avanzado:
+  - Detecta respuesta 401 (token expirado)
+  - Automáticamente llama `POST /auth/refresh` con refresh_token del authStore
+  - Actualiza authStore con nuevos tokens
+  - Reintenta request original automáticamente
+  - Cola de requests: si múltiples requests llegan con 401 simultáneamente, todos se encolan y se resuelven tras UN refresh
+  - Si refresh falla, redirige a login y limpia authStore
+
+- **Historias**: US-066
+- **Dependencias**: `implement-auth-refresh-logout`, `implement-frontend-auth-ui`
+- **Orden**: 15
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita auth backend + UI frontend funcionales.
+
+---
+
+### Change 16: `implement-navigation-by-role`
+
+- **Funcionalidad**: Navegación adaptada por rol:
+  - Componente `Navigation` / `Sidebar` que renderiza opciones según roles del usuario (del authStore)
+  - **CLIENT**: Catálogo, Mi Carrito, Mis Pedidos, Mi Perfil, Mis Direcciones
+  - **STOCK**: Productos, Categorías, Ingredientes, Stock
+  - **PEDIDOS**: Panel de Pedidos
+  - **ADMIN**: Todas las opciones anteriores + Usuarios, Métricas, Configuración
+  - Usuario no autenticado: Catálogo, Login, Registrarse
+  - Lazy loading: módulos de features se cargan dinámicamente según rol
+  - Guards de rutas frontend: previene navegación directa a rutas no permitidas
+
+- **Historias**: US-075, US-076
+- **Dependencias**: `implement-route-protection`, `implement-frontend-auth-ui`
+- **Orden**: 16
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita autenticación funcional y protección de rutas.
+
+---
+
+---
+
+## 📦 PHASE 2 — GESTIÓN DE CATÁLOGO (Sprint 2-3)
+
+_El corazón del negocio: qué venden y cómo lo organizan._
+
+### Change 17: `implement-categories-crud`
+
+- **Funcionalidad**: Categorías jerárquicas con padre autoreferencial:
+  - **POST /api/v1/categorias**: crea categoría con nombre, padre_id opcional
+  - **GET /api/v1/categorias**: retorna árbol anidado completo (CTE recursivo PostgreSQL)
+  - **PUT /api/v1/categorias/:id**: modifica nombre/padre_id con validación de ciclos (verifica que no se genere bucle)
+  - **DELETE /api/v1/categorias/:id**: soft delete, solo si no tiene productos activos asociados
+  - Relación: Categoria.padre_id FK autoreferencial nullable
+  - Validación: no permitir asignar categoría como padre de sí misma
+  - Roles: ADMIN + STOCK pueden modificar, público puede listar
+
+- **Historias**: US-007, US-008, US-009, US-010
+- **Dependencias**: `implement-route-protection`, `implement-base-patterns`
+- **Orden**: 17
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita protección de rutas y BaseRepository.
+
+---
+
+### Change 18: `implement-ingredients-crud`
+
+- **Funcionalidad**: Gestión de ingredientes con flag de alergenos:
+  - **POST /api/v1/ingredientes**: crea ingrediente con nombre (único) y es_alergeno booleano
+  - **GET /api/v1/ingredientes**: lista paginada, filtrable por es_alergeno=true
+  - **PUT /api/v1/ingredientes/:id**: modifica nombre/flag
+  - **DELETE /api/v1/ingredientes/:id**: soft delete
+  - Roles: ADMIN + STOCK modifican, público puede listar
+
+- **Historias**: US-011, US-012, US-013, US-014
+- **Dependencias**: `implement-route-protection`, `implement-base-patterns`
+- **Orden**: 18
+- **Duración**: ~3 horas
+
+**Por qué**: Similar a categorías, independiente.
+
+---
+
+### Change 19: `implement-products-crud`
+
+- **Funcionalidad**: CRUD de productos con relaciones M:M:
+  - **POST /api/v1/productos**: crea producto con nombre, descripción, precio DECIMAL(10,2) ≥0, stock INTEGER ≥0, disponible boolean, imagen URL, categorías (array de IDs), ingredientes (array de IDs)
+  - **GET /api/v1/productos**: (sin filtros, solo admin)
+  - **PUT /api/v1/productos/:id**: modifica cualquier campo
+  - **PATCH /api/v1/productos/:id/disponibilidad**: toggle disponible true/false
+  - **DELETE /api/v1/productos/:id**: soft delete
+  - Tablas intermedias: ProductoCategoria (M:M), ProductoIngrediente (M:M) con campo es_removible
+  - Validaciones: precio >0, stock ≥0, categorías/ingredientes referenciados existen
+  - Roles: ADMIN + STOCK crean/modifican, solo admin puede ver productos no disponibles
+
+- **Historias**: US-015, US-016, US-017, US-020, US-021, US-022
+- **Dependencias**: `implement-categories-crud`, `implement-ingredients-crud`
+- **Orden**: 19
+- **Duración**: ~6 horas
+
+**Por qué**: Necesita categorías e ingredientes ya funcionales.
+
+---
+
+### Change 20: `implement-catalog-public-api`
+
+- **Funcionalidad**: Endpoints públicos del catálogo:
+  - **GET /api/v1/productos**: listado paginado (page, size), filtrable por:
+    - categoria_id (una o múltiples)
+    - nombre (búsqueda ILIKE)
+    - rango precio (precio_min, precio_max)
+    - solo productos con disponible=true y eliminado_en IS NULL
+  - **GET /api/v1/productos/:id**: detalle completo con categorías anidadas, ingredientes con es_alergeno, stock (no cantida exacta, solo disponible=true)
+  - **GET /api/v1/categorias**: árbol jerárquico completo (CTE recursivo), solo activas
+  - Todos públicos (sin autenticación requerida)
+
+- **Historias**: US-018, US-019, US-023, US-008
+- **Dependencias**: `implement-products-crud`, `implement-categories-crud`
+- **Orden**: 20
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita CRUD backend funcional.
+
+---
+
+### Change 21: `implement-catalog-frontend-ui`
+
+- **Funcionalidad**: Interfaz del catálogo:
+  - Componente `ProductGrid`: grid responsive, cards con imagen/nombre/precio, badge disponible/agotado
+  - Componente `ProductDetail`: modal o página con descripción, ingredientes (alergenos resaltados), precio, botón agregar al carrito
+  - Componente `CategoryNav`: navegación jerárquica de categorías (horizontal o sidebar expandible)
+  - Filtros: selector de categoría, input de búsqueda con debounce 300ms, rango precio con sliders, aplicar/limpiar filtros
+  - Paginación: botones anterior/siguiente, selectores de página
+  - Skeleton loaders: durante fetch
+  - TanStack Query: useQuery para catálogo, invalidación en cambios de filtro
+
+- **Historias**: US-018, US-019, US-023
+- **Dependencias**: `implement-catalog-public-api`, `setup-frontend-core`
+- **Orden**: 21
+- **Duración**: ~6 horas
+
+**Por qué**: Necesita API pública funcional y setup frontend.
+
+---
+
+---
+
+## 👤 PHASE 3 — GESTIÓN DEL PERFIL Y DIRECCIONES (Sprint 4)
+
+_Los datos personales del cliente, necesarios para hacer entregas y contacto._
+
+### Change 22: `implement-user-profile-crud`
+
+- **Funcionalidad**: Gestión del perfil del usuario autenticado:
+  - **GET /api/v1/perfil**: retorna datos del usuario (id, nombre, email, teléfono, creado_en)
+  - **PUT /api/v1/perfil**: modifica nombre, teléfono (solo del usuario autenticado, via JWT)
+  - **PUT /api/v1/perfil/contrasena**: endpoint separado que pide contraseña actual + nueva, valida, hashea nueva, invalida TODOS los refresh tokens del usuario (force logout en otros dispositivos)
+  - Soft delete de usuario: solo admin, marca eliminado_en
+  - Validaciones: nombre ≥2 caracteres, teléfono formato válido (opcional)
+
+- **Historias**: US-061, US-062, US-063
+- **Dependencias**: `implement-route-protection`
+- **Orden**: 22
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita autenticación y protección de rutas.
+
+---
+
+### Change 23: `implement-delivery-addresses-crud`
+
+- **Funcionalidad**: CRUD de direcciones de entrega:
+  - **POST /api/v1/direcciones**: crea dirección con alias, linea1, linea2 (opcional), ciudad, código_postal, referencia (opcional), es_principal booleano
+  - **GET /api/v1/direcciones**: lista direcciones del usuario autenticado
+  - **GET /api/v1/direcciones/:id**: detalle de dirección (verifica ownership)
+  - **PUT /api/v1/direcciones/:id**: modifica dirección (solo propietario)
+  - **PATCH /api/v1/direcciones/:id/principal**: setea como principal (desactiva anterior principal)
+  - **DELETE /api/v1/direcciones/:id**: soft delete (solo propietario)
+  - Validación: solo una principal por usuario, no se puede eliminar si es la única
+  - Primera dirección creada se marca automáticamente como principal
+  - Tabla: DireccionEntrega con usuario_id FK, es_principal UNIQUE CONSTRAINT (usuario_id, es_principal=true)
+
+- **Historias**: US-024, US-025, US-026, US-027, US-028
+- **Dependencias**: `implement-user-profile-crud`
+- **Orden**: 23
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita perfil funcional para vincular direcciones a usuario.
+
+---
+
+### Change 24: `implement-user-profile-frontend`
+
+- **Funcionalidad**: Interfaz de perfil y direcciones:
+  - Página `ProfilePage`: sección editable de nombre/teléfono (form inline), sección cambiar contraseña (modal con confirmación)
+  - Página `AddressesPage`: tabla de direcciones con alias/calle/ciudad, botones editar/eliminar, indicador de principal (estrella)
+  - Modal `AddEditAddressForm`: inputs para alias, dirección, checkbox "establecer como principal"
+  - Confirmación de eliminación: modal con advertencia
+  - TanStack Query: useQuery para direcciones, useMutation para crear/actualizar/eliminar con invalidación
+  - Validación inline de inputs
+
+- **Historias**: US-061, US-062, US-063, US-024-US-028 (frontend)
+- **Dependencias**: `implement-user-profile-crud`, `implement-delivery-addresses-crud`
+- **Orden**: 24
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita endpoints de perfil y direcciones funcionales.
+
+---
+
+---
+
+## 🛒 PHASE 4 — CARRITO DE COMPRAS Y VALIDACIONES (Sprint 4-5)
+
+_El estado del cliente durante la compra, persistente y validable._
+
+### Change 25: `implement-cart-zustand-store`
+
+- **Funcionalidad**: Store Zustand para carrito:
+  - Estado: `items` array de {producto_id, nombre, imagen, precio, cantidad, personalizacion: ingredientIds[]}
+  - Acciones:
+    - `addItem(producto, cantidad, personalizacion)`: si producto ya existe, incrementa cantidad; valida que personalizacion sean ingredientes del producto
+    - `updateQuantity(productoId, cantidad)`: actualiza cantidad, elimina si cantidad <= 0
+    - `removeItem(productoId)`: elimina del carrito
+    - `clearCart()`: vacía todo
+  - Selectores:
+    - `totalItems()`: suma de cantidades
+    - `totalPrice()`: suma(cantidad \* precio)
+    - `getItem(productoId)`: obtiene ítem específico
+  - Persistencia: localStorage con clave `food-store-cart`, middleware persist
+  - Sobrevive a: cierre del navegador, refresh de página, logout/login
+
+- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
+- **Dependencias**: `setup-zustand-stores`
+- **Orden**: 25
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita Zustand configurado.
+
+---
+
+### Change 26: `implement-cart-frontend-ui`
+
+- **Funcionalidad**: Interfaz del carrito:
+  - Componente `CartDrawer`: drawer deslizable desde la derecha, título "Mi Carrito", lista de ítems, totales (subtotal, envío, total), botones "Vaciar" (con confirmación) y "Ir a Pagar"
+  - Componente `CartItem`: cada línea con imagen (pequeña), nombre, precio, cantidad (botones +/-), botón eliminar, lista visual de exclusiones (ingredientes removidos)
+  - Componente `CartSummary`: muestra totales en mini sidebar o footer, badge con cantidad de ítems
+  - Acceso: botón flotante o en header
+  - Interactividad: agregar al carrito desde ProductDetail, qty incremental o directa
+  - TanStack Query invalidation: cuando producto es modificado, actualizar carrito localmente (precio obsoleto → advertencia)
+  - Responsive: drawer adapta a mobile, full width en pantalla chica
+
+- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
+- **Dependencias**: `implement-cart-zustand-store`, `implement-catalog-frontend-ui`
+- **Orden**: 26
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita store de carrito + catálogo UI.
+
+---
+
+### Change 27: `implement-checkout-validation`
+
+- **Funcionalidad**: Pre-validación antes de crear pedido:
+  - Endpoint `POST /api/v1/pedidos/validar`: recibe items del carrito, verifica:
+    - Producto existe y está disponible
+    - Stock suficiente (SELECT FOR UPDATE dentro de UoW)
+    - Personalizaciones válidas (ingredientes existen en producto)
+    - Precio actual vs precio que pagará (advertencia si cambió)
+  - Retorna: `{ valido: true, advertencias: [...] }` o `{ valido: false, errores: [...] }`
+  - Frontend: pre-submit en formulario checkout, muestra advertencias/errores antes de confirmar pago
+
+- **Historias**: US-069, US-070
+- **Dependencias**: `implement-products-crud`, `implement-cart-zustand-store`
+- **Orden**: 27
+- **Duración**: ~3 horas
+
+**Por qué**: Necesita productos funcionales y carrito tipado.
+
+---
+
+---
+
+## 📝 PHASE 5 — CREACIÓN DE PEDIDOS CON SNAPSHOTS (Sprint 5)
+
+_El primer evento transaccional grande. Todo atómico o nada._
+
+### Change 28: `implement-order-creation-atomically` ⭐ **CRÍTICO**
+
+- **Funcionalidad**: Creación de pedidos con transacción atómica (Unit of Work):
+  - Endpoint `POST /api/v1/pedidos`:
+    - Recibe: `{ items: [{producto_id, cantidad, personalizacion}], direccion_id, forma_pago_id, notas? }`
+    - **Paso 1 — Validación**: Producto disponible, stock suficiente (SELECT FOR UPDATE)
+    - **Paso 2 — Snapshots**: Captura precio_snapshot, nombre_snapshot, dirección completa serializada
+    - **Paso 3 — Cálculos**: Subtotal (cantidad × precio_snapshot), costo_envio (fijo 50 ars v1), total
+    - **Paso 4 — Create Pedido**: INSERT en tabla Pedido, estado=PENDIENTE, obtiene pedido.id via flush
+    - **Paso 5 — Create DetallePedido**: INSERT × N ítems con snapshots, personalizacion como INTEGER[]
+    - **Paso 6 — Create HistorialEstadoPedido**: INSERT con estado_desde=NULL (regla RN-02)
+    - **UoW**: Commit atómico si todo OK, ROLLBACK si error en cualquier paso (stock insuficiente, etc.)
+  - Validaciones: usuario autenticado, dirección es del usuario, forma_pago existe y activa
+  - Respuesta: PedidoRead con ID del pedido, estado, totales
+
+- **Historias**: US-035, US-036, US-037, US-038
+- **Dependencias**: `implement-checkout-validation`, `implement-delivery-addresses-crud`, `implement-base-patterns`
+- **Orden**: 28
+- **Duración**: ~6 horas
+
+**Por qué**: BLOQUEANTE para pagos y todo lo que sigue. Necesita UoW, direcciones y validaciones.
+
+---
+
+### Change 29: `implement-order-detail-endpoints`
+
+- **Funcionalidad**: Endpoints de lectura de pedidos:
+  - **GET /api/v1/pedidos**: listado paginado (page, size)
+    - Si CLIENT: solo sus pedidos
+    - Si ADMIN/PEDIDOS: todos los pedidos
+    - Filtrable por estado, fecha, usuario (solo admin)
+    - Retorna: PedidoRead (id, estado, total, fecha, usuario)
+  - **GET /api/v1/pedidos/:id**: detalle completo
+    - Verificar ownership (usuario propietario o ADMIN)
+    - Retorna: PedidoDetail (id, estado, items[], snapshots completos, totales, historial)
+    - Soft delete check: no retornar pedidos eliminados lógicamente
+
+- **Historias**: US-049, US-050, US-051, US-052
+- **Dependencias**: `implement-order-creation-atomically`
+- **Orden**: 29
+- **Duración**: ~3 horas
+
+**Por qué**: Depende de creación de pedidos.
+
+---
+
+### Change 30: `implement-order-frontend-ui`
+
+- **Funcionalidad**: Interfaz de pedidos:
+  - Componente `OrderConfirmation`: página post-creación exitosa, muestra ID de pedido, total, dirección, botón "Ir a Pagar" o "Ver Mis Pedidos"
+  - Componente `OrderList`: tabla de pedidos con ID, estado (badge de color), total, fecha, cliente (si admin)
+  - Componente `OrderDetail`: vista expandible/modal con snapshots (precio, nombre, dirección), historial de estados con timeline, estado del pago, botones de acción según rol
+  - Timeline visual: PENDIENTE → CONFIRMADO → EN_PREP → EN_CAMINO → ENTREGADO, con markers de tiempo
+  - TanStack Query: useQuery para listar/detalle, invalidación tras creación
+
+- **Historias**: US-071, US-049, US-050, US-035
+- **Dependencias**: `implement-order-detail-endpoints`, `implement-cart-frontend-ui`
+- **Orden**: 30
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita API de pedidos funcional.
+
+---
+
+---
+
+## 💳 PHASE 6 — INTEGRACIÓN MERCADOPAGO Y MÁQUINA DE ESTADOS (Sprint 6)
+
+_El circuito cerrado: dinero entra, estado avanza, stock se decrementa._
+
+### Change 31: `implement-payment-creation`
+
+- **Funcionalidad**: Creación de preferencia de pago con MercadoPago:
+  - Endpoint `POST /api/v1/pagos/crear`:
+    - Recibe: `{ pedido_id, card_token }` (token generado por SDK MercadoPago.js en browser)
+    - Validar: pedido existe, estado=PENDIENTE, usuario es propietario
+    - Generate: `idempotency_key = uuid.uuid4()` (string)
+    - SDK MercadoPago: llamar `client.payment.create()` con items del pedido, monto, external_reference=pedido.id, idempotency_key
+    - Recibir: mp_payment_id, status (pending/approved/rejected)
+    - INSERT en tabla Pago: pedido_id, mp_payment_id, mp_status, external_reference, idempotency_key
+    - Retorna: { mp_payment_id, status, statusDetail }
+  - PCI SAQ-A: datos de tarjeta nunca tocan servidor (tokenizados en browser)
+
+- **Historias**: US-045
+- **Dependencias**: `implement-order-creation-atomically`, `implement-base-patterns`
+- **Orden**: 31
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita pedidos + UoW.
+
+---
+
+### Change 32: `implement-payment-webhook` ⭐ **CRÍTICO**
+
+- **Funcionalidad**: Procesamiento de notificaciones IPN de MercadoPago:
+  - Endpoint `POST /api/v1/pagos/webhook`:
+    - Recibe: JSON de MercadoPago con topic=payment, event_id, data (payment_id)
+    - Validación: verifica firma de webhook (X-Signature header contra SECRET_KEY)
+    - Query: consulta API MP directamente para confirmar status real (nunca confiar solo en webhook)
+    - Si status == "approved":
+      - Buscar Pago via mp_payment_id
+      - Dentro de UoW: avanzar Pedido de PENDIENTE → CONFIRMADO
+      - Dentro de UoW: DECREMENTAR stock de cada producto (SELECT FOR UPDATE por item)
+      - Dentro de UoW: crear HistorialEstadoPedido con estado_desde=PENDIENTE, estado_nuevo=CONFIRMADO, actor=SISTEMA
+      - COMMIT atómico
+    - Si status == "rejected" o "pending": solo actualizar estado en tabla Pago, pedido permanece PENDIENTE
+    - Idempotencia: si idempotency_key ya procesado, ignora (detecta reintentos)
+    - Retorna: HTTP 200 rápidamente (no hace esperar a MP)
+
+- **Historias**: US-046
+- **Dependencias**: `implement-payment-creation`, `implement-base-patterns`
+- **Orden**: 32
+- **Duración**: ~5 horas
+
+**Por qué**: BLOQUEANTE. Cierra el ciclo pago-confirmación. Necesita UoW.
+
+---
+
+### Change 33: `implement-payment-query-and-retry`
+
+- **Funcionalidad**: Consulta y reintento de pagos:
+  - **GET /api/v1/pagos/:pedido_id**: obtiene estado actual del pago, si existen múltiples intentos retorna array histórico
+  - **POST /api/v1/pagos/reintentar**: si pago anterior fue rechazado, cliente puede crear nuevo intento
+    - Recibe: pedido_id, nuevo card_token
+    - Genera: nuevo idempotency_key
+    - Llama a Payment.create() nuevamente (MP tratará como transacción independiente)
+    - INSERT nuevo registro en tabla Pago (relación 1:N Pedido→Pago)
+    - Retorna: nuevo mp_payment_id y status
+
+- **Historias**: US-047, US-048
+- **Dependencias**: `implement-payment-webhook`
+- **Orden**: 33
+- **Duración**: ~3 horas
+
+**Por qué**: Mejora sobre pagos.
+
+---
+
+### Change 34: `implement-order-fsm-transitions` ⭐ **CRÍTICO**
+
+- **Funcionalidad**: Máquina de estados del pedido (FSM):
+  - Service layer: clase `PedidoService` con método `avanzar_estado(pedido_id, nuevo_estado, motivo?, actor)`
+  - Validación de transiciones contra mapa hardcodeado:
+    - PENDIENTE → [CONFIRMADO, CANCELADO]
+    - CONFIRMADO → [EN_PREPARACIÓN, CANCELADO]
+    - EN_PREPARACIÓN → [EN_CAMINO, CANCELADO] (solo ADMIN)
+    - EN_CAMINO → [ENTREGADO]
+    - ENTREGADO: terminal
+    - CANCELADO: terminal
+  - Regla especial: PENDIENTE → CONFIRMADO es EXCLUSIVA del webhook (no manual, RN-02)
+  - Stock:
+    - CONFIRMADO: ya fue decrementado por webhook (RN-FS03)
+    - CANCELADO desde CONFIRMADO: restaurar stock atómicamente (SELECT FOR UPDATE, increment)
+    - CANCELADO desde EN_PREP: solo ADMIN, restaura stock
+  - Historial: INSERT en HistorialEstadoPedido con estado_anterior, estado_nuevo, timestamp, actor, motivo
+  - Endpoint `PATCH /api/v1/pedidos/:id/avanzar`:
+    - Recibe: { nuevo_estado, motivo? }
+    - Llama service.avanzar_estado(pedido_id, nuevo_estado, motivo, usuario_actual)
+    - Validar rol requerido según transición
+    - Retorna: PedidoRead actualizado
+  - Endpoint `DELETE /api/v1/pedidos/:id` o `PATCH /pedidos/:id/cancelar`:
+    - Cliente solo puede cancelar PENDIENTE/CONFIRMADO
+    - Admin puede cancelar PENDIENTE/CONFIRMADO/EN_PREP
+    - Gesttor PEDIDOS puede cancelar PENDIENTE/CONFIRMADO
+
+- **Historias**: US-039, US-040, US-041, US-042, US-043, US-044
+- **Dependencias**: `implement-order-detail-endpoints`
+- **Orden**: 34
+- **Duración**: ~7 horas
+
+**Por qué**: CENTRAL. Coordina pagos, stock, historial. BLOQUEANTE para admin.
+
+---
+
+### Change 35: `implement-order-history-audittrail`
+
+- **Funcionalidad**: API del historial de estados:
+  - Endpoint `GET /api/v1/pedidos/:id/historial`:
+    - Retorna lista ordenada cronológicamente (ORDER BY created_at ASC) de HistorialEstadoPedido
+    - Cada registro: {estado_anterior, estado_nuevo, timestamp, actor (usuario.nombre o "SISTEMA"), motivo}
+    - Verificar ownership o rol ADMIN
+  - El historial es append-only: nunca UPDATE/DELETE
+
+- **Historias**: US-044
+- **Dependencias**: `implement-order-fsm-transitions`
+- **Orden**: 35
+- **Duración**: ~2 horas
+
+**Por qué**: Depende de FSM y está documentado en archivos de auditoría.
+
+---
+
+### Change 36: `implement-payment-frontend-ui`
+
+- **Funcionalidad**: Interfaz de pagos:
+  - Página `CheckoutPage`:
+    - Resumen de carrito (items, subtotal, envío, total)
+    - Selector de dirección (con opción agregar nueva)
+    - Selector de forma de pago (solo MERCADOPAGO v1)
+    - Integración: componente `CardPaymentForm` de SDK MercadoPago
+    - Botón "Pagar": valida dirección + forma de pago, tokeniza con SDK, POST /pagos/crear
+  - Post-pago:
+    - **Success**: página con "¡Pago confirmado!", ID de pedido, botón "Rastrear Pedido"
+    - **Failure**: página con error, botón "Reintentar" (POST /pagos/reintentar) o "Volver al carrito"
+    - **Pending**: mensaje "Tu pago está siendo procesado, espera confirmación por email"
+  - Polling: cada 5-10 segundos, GET /pagos/pedido_id para verificar cambio de estado (mientras está PENDIENTE)
+  - Cancelación: usuario puede cancelar pago pendiente (DELETE /pedidos/:id)
+
+- **Historias**: US-045, US-072
+- **Dependencias**: `implement-payment-creation`, `implement-order-frontend-ui`, `implement-payment-webhook`
+- **Orden**: 36
+- **Duración**: ~6 horas
+
+**Por qué**: Necesita pagos backend completo + UI pedidos.
+
+---
+
+---
+
+## 🛠️ PHASE 7 — PANEL ADMINISTRATIVO Y MÉTRICAS (Sprint 7-8)
+
+_Control total del negocio desde un solo lugar._
+
+### Change 37: `implement-admin-users-management`
+
+- **Funcionalidad**: Gestión de usuarios en admin:
+  - **GET /api/v1/admin/usuarios**: listado paginado (page, size), filtrable por rol/email/estado
+  - **PUT /api/v1/admin/usuarios/:id**: modifica nombre, email, teléfono, asigna/quita roles (M:M), activar/desactivar
+  - **DELETE /api/v1/admin/usuarios/:id**: soft delete (marca eliminado_en)
+  - Validación: solo ADMIN puede hacer esto
+  - Seguridad: ADMIN no puede quitarse el rol ADMIN si es el último admin
+  - Invalidación: post-cambio de rol, tokens del usuario se invalidan (fuerza re-login)
+
+- **Historias**: US-053, US-054, US-055
+- **Dependencias**: `implement-rbac-system`
+- **Orden**: 37
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita RBAC funcional.
+
+---
+
+### Change 38: `implement-admin-order-management`
+
+- **Funcionalidad**: Gestión de pedidos en admin:
+  - **GET /api/v1/admin/pedidos**: listado de TODOS los pedidos (no filtrado por usuario), filtrable por estado/fecha/cliente/rango de monto
+  - **PATCH /api/v1/admin/pedidos/:id/estado**: transiciones de estado con motivo registrado
+  - Campos visibles: ID, cliente, monto, estado, fecha, dirección
+  - Click en pedido: modal de detalle con snapshots, historial completo, botones de acción (transicionar, cancelar)
+  - Cancelación: admin ingresa motivo obligatorio, POST /pedidos/:id con action=cancel
+
+- **Historias**: US-065, US-051, US-052
+- **Dependencias**: `implement-order-fsm-transitions`, `implement-admin-users-management`
+- **Orden**: 38
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita FSM y gestión de usuarios.
+
+---
+
+### Change 39: `implement-admin-catalog-access`
+
+- **Funcionalidad**: Endpoints de catálogo aceptan roles ADMIN+STOCK:
+  - **GET /api/v1/productos**: ahora retorna TODOS los productos (incluyendo no disponibles) si usuario es ADMIN/STOCK
+  - **POST/PUT/DELETE /productos**: solo ADMIN/STOCK
+  - Panel admin: CRUD de productos (crear, editar stock, cambiar disponibilidad, eliminar)
+  - CRUD de categorías: crear, editar, eliminar
+  - CRUD de ingredientes: crear, editar, eliminar
+  - Acceso: solo ADMIN/STOCK ver el menú "Catálogo"
+
+- **Historias**: US-064
+- **Dependencias**: `implement-products-crud`, `implement-categories-crud`, `implement-ingredients-crud`, `implement-rbac-system`
+- **Orden**: 39
+- **Duración**: ~3 horas
+
+**Por qué**: Requiere todos los CRUD del catálogo.
+
+---
+
+### Change 40: `implement-metrics-endpoints`
+
+- **Funcionalidad**: Endpoints de agregación para dashboard:
+  - **GET /api/v1/admin/metricas/resumen**: KPIs generales
+    - { total_ventas, cantidad_pedidos, pedidos_por_estado: {PENDIENTE: N, CONFIRMADO: N, ...}, usuarios_registrados }
+  - **GET /api/v1/admin/metricas/ventas**: por período (día/semana/mes)
+    - Recibe: { fecha_inicio, fecha_fin, granularidad: "day"|"week"|"month" }
+    - Retorna: array de { fecha, monto_total, cantidad_pedidos }
+  - **GET /api/v1/admin/metricas/productos-top**: top 10 productos más vendidos
+    - Retorna: array de { producto_id, nombre, cantidad_vendida, monto_total }
+  - **GET /api/v1/admin/metricas/pedidos-por-estado**: distribución actual
+    - Retorna: array de { estado, cantidad, porcentaje }
+  - Todas protegidas por rol ADMIN
+
+- **Historias**: US-056, US-057, US-058, US-059
+- **Dependencias**: `implement-order-creation-atomically`, `implement-admin-users-management`
+- **Orden**: 40
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita pedidos completos + auditoría.
+
+---
+
+### Change 41: `implement-admin-dashboard-ui`
+
+- **Funcionalidad**: Dashboard visual:
+  - Layout: sidebar + main content area
+  - KPIs en cards: Total ventas (hoy/mes), Pedidos pendientes, Usuarios, Órdenes entregadas
+  - LineChart (recharts): ventas por día/semana/mes, selector de período
+  - BarChart: top 10 productos vendidos
+  - PieChart: distribución de estados de pedido
+  - Filtros: rango de fechas, granularidad (día/semana/mes)
+  - Responsive: adapta a tablet/mobile
+
+- **Historias**: US-056, US-057, US-058, US-059
+- **Dependencias**: `implement-metrics-endpoints`
+- **Orden**: 41
+- **Duración**: ~6 horas
+
+**Por qué**: Necesita endpoints de métricas.
+
+---
+
+### Change 42: `implement-admin-users-ui`
+
+- **Funcionalidad**: Panel de gestión de usuarios:
+  - Tabla: ID, nombre, email, roles (badges), estado (activo/inactivo), fecha creación
+  - Búsqueda: input de búsqueda (debounce) por nombre/email
+  - Filtros: por rol (selectores múltiples), estado
+  - Acciones: click en fila abre modal de edición
+  - Modal: campos nombre, email, teléfono, selector de roles (checkboxes), toggle activo/inactivo, botones Guardar/Cancelar
+  - Confirmación crítica: si se quita rol ADMIN, pedir confirmación
+
+- **Historias**: US-053, US-054, US-055
+- **Dependencias**: `implement-admin-users-management`, `implement-admin-dashboard-ui`
+- **Orden**: 42
+- **Duración**: ~4 horas
+
+**Por qué**: Necesita endpoints y dashboard.
+
+---
+
+### Change 43: `implement-admin-orders-management-ui`
+
+- **Funcionalidad**: Panel de gestión de pedidos:
+  - Tabla: ID, cliente, monto, estado (badge), fecha
+  - Búsqueda/filtros: por ID de pedido, nombre de cliente, estado, fecha range
+  - Hover en fila: preview de datos (cliente, dirección, items)
+  - Click: modal de detalle
+  - Modal: snapshots completos, historial timeline, estado actual, botones de acción (Avanzar Estado, Cancelar)
+  - Avanzar Estado: dropdown con estado siguiente válido, input de motivo (obligatorio si CANCELADO)
+
+- **Historias**: US-051, US-052, US-065
+- **Dependencias**: `implement-admin-order-management`, `implement-admin-dashboard-ui`
+- **Orden**: 43
+- **Duración**: ~5 horas
+
+**Por qué**: Necesita gestión de pedidos backend.
+
+---
+
+### Change 44: `implement-system-configuration`
+
+- **Funcionalidad**: Configuración del sistema:
+  - Endpoint `GET/PUT /api/v1/admin/configuracion`:
+    - Tabla key-value en BD con parámetros del sistema
+    - Parámetros iniciales: horario_apertura, horario_cierre, zona_entrega (geolocalización simple), costo_envio, mensaje_bienvenida
+    - Auditoría: registra quién cambió qué y cuándo
+  - UI minimal: formulario con pares clave-valor, botón Guardar, confirmación
+
+- **Historias**: US-060
+- **Dependencias**: `implement-admin-dashboard-ui`
+- **Orden**: 44
+- **Duración**: ~3 horas
+
+**Por qué**: Parametrización del sistema.
+
+---
+
+---
+
+## ✨ PHASE 8 — PULIDO Y OBSERVABILIDAD (Sprint 8+)
+
+_Los detalles que hacen la experiencia profesional y el sistema observable._
+
+### Change 45: `implement-notifications-and-feedback`
+
+- **Funcionalidad**: Sistema centralizado de feedback al usuario:
+  - **Toast/Notification system**: librería (React Hot Toast o similar) con tipos (success, error, info, warning)
+  - **Error handling frontend**: interceptor Axios mapea códigos a toasts amigables
+  - **Modal de confirmación**: antes de acciones críticas (eliminar, cancelar pedido, cambiar contraseña)
+  - **Estados vacíos**: páginas sin datos muestran ilustración + CTA ("Aún no tienes pedidos, ¡comienza a comprar!")
+  - **Skeleton loaders**: durante fetch en ProductGrid, OrderList, CartDrawer
+  - **Indicadores de carga**: botones deshabilitados + spinner durante submit
+  - **Badges de estado**: pedido ENTREGADO (verde), PENDIENTE (amarillo), CANCELADO (rojo), etc.
+
+- **Historias**: US-071, US-072
+- **Dependencias**: `implement-error-handling`, `implement-admin-dashboard-ui`
+- **Orden**: 45
+- **Duración**: ~4 horas
+
+**Por qué**: Transversal pero implementable tras error handling.
+
+---
+
+### Change 46: `implement-ui-responsiveness-and-ux`
+
+- **Funcionalidad**: Mobile-first design y accesibilidad:
+  - Responsive grids: mobile-first, breakpoints Tailwind (sm, md, lg, xl)
+  - Drawer menu: mobile navbar colapsable
+  - Touch-friendly: botones ≥44px, inputs con padding ample
+  - Accesibilidad: ARIA labels, semantic HTML, keyboard navigation
+  - Dark mode: toggle en uiStore, applica a Tailwind classes
+  - Animaciones: Tailwind transitions, fade/slide suave
+  - Tipografía: readable fonts (Tailwind defaults), contrast WCAG AA
+
+- **Historias**: Transversal (todas las historias frontend)
+- **Dependencias**: `implement-notifications-and-feedback`
+- **Orden**: 46
+- **Duración**: ~6 horas
+
+**Por qué**: Refinamiento general post-funcional.
+
+---
+
+### Change 47: `implement-logging-and-monitoring`
+
+- **Funcionalidad**: Observabilidad del sistema:
+  - **Backend**: logging estructurado con Python logging (JSON format), niveles INFO/WARNING/ERROR, logs de requests (entrada/salida), logs de errores con stack trace
+  - **Frontend**: TanStack Query DevTools (dev mode), console logging de actions importantes (login, orden creada, pago confirmado)
+  - **Error tracking**: (opcional) integración con Sentry para capturar errores en producción
+  - **Performance**: Core Web Vitals tracking (LCP, FID, CLS)
+
+- **Historias**: Transversal (infraestructura)
+- **Dependencias**: `implement-error-handling`
+- **Orden**: 47
+- **Duración**: ~3 horas
+
+**Por qué**: Infraestructura para diagnosticar issues en producción.
+
+---
+
+### Change 48: `implement-unit-tests-backend`
+
+- **Funcionalidad**: Cobertura de tests unitarios (pytest):
+  - **auth_test.py**: register (email duplicado, contraseña corta, válido), login (credenciales inválidas, rate limit), refresh (token expirado, replay attack), logout
+  - **products_test.py**: create product, update stock, soft delete, filtrar por categoría
+  - **orders_test.py**: crear pedido atómico (stock insuficiente → rollback), transiciones de estado válidas/inválidas, cancelación con stock restoration
+  - **payments_test.py**: webhook processing (estado approved/rejected), idempotencia con duplicate key
+  - Fixtures: users de prueba, productos, pedidos, pagos
+  - Cobertura meta: ≥60% de líneas críticas
+
+- **Historias**: Bonus (no es US pero es importante)
+- **Dependencias**: `implement-order-fsm-transitions`, `implement-payment-webhook`, `implement-auth-register`
+- **Orden**: 48
+- **Duración**: ~8 horas
+
+**Por qué**: Garantizar calidad antes de deploy.
+
+---
+
+### Change 49: `deploy-and-documentation`
+
+- **Funcionalidad**: Preparación para producción:
+  - **README.md**: instrucciones de setup local (clonar, venv/npm install, alembic upgrade, seed, npm run dev + uvicorn), variables de entorno, cómo obtener credenciales MP
+  - **.env.example**: actualizado con TODAS las variables (DB, JWT, CORS, MP, etc.)
+  - **Swagger UI**: accesible en /docs con todos los endpoints documentados
+  - **Deploy**: seleccionar Railway/Render/Fly.io, preparar Procfile/dockerfile, CI/CD básico (tests en push)
+  - **Video de demostración**: 5-10 min mostrando flujo completo (login, carrito, pago, admin dashboard)
+  - **GitHub**: repositorio público verificado sin .env
+
+- **Historias**: Transversal (entrega)
 - **Dependencias**: Todos los changes anteriores
-- **Estimación**: 5-6 horas
+- **Orden**: 49
+- **Duración**: ~4 horas
+
+**Por qué**: Última fase, cierre de proyecto.
 
 ---
 
-## Resumen: Orden de Implementación
+---
 
-### Fase 0: Infraestructura (2-3 semanas)
+## 📊 Resumen Visual de Dependencias
 
-1. `setup-monorepo-estructura` (Change #1)
-2. `backend-setup-fastapi-dependencies` (Change #2)
-3. `backend-setup-database-alembic-seed` (Change #3)
-4. `frontend-setup-react-vite-dependencies` (Change #4)
-5. `backend-patterns-infrastructure-base` (Change #5)
-6. `frontend-zustand-stores-setup` (Change #6)
-7. `frontend-axios-interceptors-setup` (Change #7)
+```
+PHASE 0 (Sprint 0) — FUNDACIONES
+├─ 1: bootstrap-monorepo
+│  ├─ 2: setup-backend-core
+│  │  ├─ 3: setup-postgresql-migrations
+│  │  │  ├─ 4: seed-catalogs-and-admin
+│  │  │  └─ 6: implement-base-patterns ⭐ (BLOQUEANTE)
+│  │  └─ 6: (ambos need backend-core)
+│  ├─ 5: setup-frontend-core
+│  │  └─ 7: setup-zustand-stores
+│  └─ 8: implement-error-handling (ambas capas)
 
-**Parallelizable**: Changes 2 y 4 pueden correr en paralelo
+PHASE 1 (Sprint 1) — AUTH
+├─ 9: implement-auth-register (base-patterns + seed)
+├─ 10: implement-auth-login (register)
+├─ 11: implement-auth-refresh-logout (login)
+├─ 12: implement-rbac-system (base-patterns + seed)
+├─ 13: implement-route-protection (rbac)
+├─ 14: implement-frontend-auth-ui (zustand + error-handling)
+├─ 15: implement-token-refresh-interceptor (auth-refresh + auth-ui)
+└─ 16: implement-navigation-by-role (route-protection + auth-ui)
 
-### Fase 1: Autenticación (2-3 semanas)
+PHASE 2 (Sprint 2-3) — CATÁLOGO
+├─ 17: implement-categories-crud (route-protection + base-patterns)
+├─ 18: implement-ingredients-crud (route-protection + base-patterns)
+├─ 19: implement-products-crud (categories + ingredients)
+├─ 20: implement-catalog-public-api (products + categories)
+└─ 21: implement-catalog-frontend-ui (catalog-api + frontend-core)
 
-8. `auth-user-registration` (Change #8)
-9. `auth-user-login-rate-limiting` (Change #9)
-10. `auth-token-refresh-rotation` (Change #10)
-11. `auth-logout` (Change #11)
-12. `auth-rbac-roles` (Change #12)
-13. `frontend-auth-ui-forms` (Change #13)
-14. `frontend-navigation-rbac` (Change #14)
-15. `frontend-error-handling-global` (Change #15)
+PHASE 3 (Sprint 4) — PERFIL
+├─ 22: implement-user-profile-crud (route-protection)
+├─ 23: implement-delivery-addresses-crud (user-profile)
+└─ 24: implement-user-profile-frontend (profile + addresses)
 
-### Fase 2: Catálogo (3 semanas)
+PHASE 4 (Sprint 4-5) — CARRITO
+├─ 25: implement-cart-zustand-store (zustand)
+├─ 26: implement-cart-frontend-ui (cart-store + catalog-ui)
+└─ 27: implement-checkout-validation (products + cart)
 
-16. `catalog-categories-hierarchical` (Change #16)
-17. `catalog-ingredients-allergens` (Change #17)
-18. `catalog-products-crud` (Change #18)
-19. `catalog-product-categorias-association` (Change #19)
-20. `catalog-product-ingredientes-association` (Change #20)
-21. `catalog-products-public-listing` (Change #21)
-22. `catalog-allergen-filtering` (Change #22)
-23. `frontend-catalog-grid` (Change #23)
-24. `frontend-product-detail-modal` (Change #24)
+PHASE 5 (Sprint 5) — CREAR PEDIDOS
+├─ 28: implement-order-creation-atomically ⭐ CRÍTICO (validation + addresses + base-patterns)
+├─ 29: implement-order-detail-endpoints (order-creation)
+└─ 30: implement-order-frontend-ui (order-detail + cart-ui)
 
-### Fase 3: Direcciones (1 semana)
+PHASE 6 (Sprint 6) — PAGOS & FSM
+├─ 31: implement-payment-creation (order-creation + base-patterns)
+├─ 32: implement-payment-webhook ⭐ CRÍTICO (payment-creation + base-patterns)
+├─ 33: implement-payment-query-and-retry (payment-webhook)
+├─ 34: implement-order-fsm-transitions ⭐ CRÍTICO (order-detail)
+├─ 35: implement-order-history-audittrail (fsm)
+└─ 36: implement-payment-frontend-ui (payment-creation + order-ui + webhook)
 
-25. `addresses-crud` (Change #25)
-26. `frontend-addresses-ui` (Change #26)
+PHASE 7 (Sprint 7-8) — ADMIN
+├─ 37: implement-admin-users-management (rbac)
+├─ 38: implement-admin-order-management (fsm + users-management)
+├─ 39: implement-admin-catalog-access (products + categories + ingredients + rbac)
+├─ 40: implement-metrics-endpoints (order-creation + users-management)
+├─ 41: implement-admin-dashboard-ui (metrics)
+├─ 42: implement-admin-users-ui (users-management + dashboard)
+├─ 43: implement-admin-orders-management-ui (order-management + dashboard)
+└─ 44: implement-system-configuration (dashboard)
 
-### Fase 4: Carrito (1 semana)
-
-27. `cart-store-persistence` (Change #27)
-28. `frontend-cart-ui-drawer` (Change #28)
-
-### Fase 5: Pedidos (4 semanas) — **Núcleo del sistema**
-
-29. `orders-fsm-state-machine` (Change #29)
-30. `orders-creation-atomic-uow` (Change #30)
-31. `orders-stock-decrement-confirm` (Change #31)
-32. `orders-stock-restore-cancel` (Change #32)
-33. `orders-list-and-detail-endpoints` (Change #33)
-34. `orders-state-transitions-endpoints` (Change #34)
-35. `frontend-orders-list-page` (Change #35)
-36. `frontend-order-detail-page` (Change #36)
-
-### Fase 6: Pagos MercadoPago (2-3 semanas)
-
-37. `payments-mercadopago-integration` (Change #37)
-38. `payments-multiple-attempts-per-order` (Change #38)
-39. `frontend-checkout-card-payment` (Change #39)
-40. `frontend-payment-status-polling` (Change #40)
-
-### Fase 7: Perfil (1 semana)
-
-41. `profile-user-view-and-edit` (Change #41)
-42. `frontend-profile-page` (Change #42)
-
-### Fase 8: Admin Panel (2-3 semanas)
-
-43. `admin-dashboard-metrics` (Change #43)
-44. `admin-users-management` (Change #44)
-45. `admin-products-management` (Change #45)
-46. `admin-categories-management` (Change #46)
-47. `admin-stock-management` (Change #47)
-48. `admin-orders-management-fsm` (Change #48)
-
-### Fase 9: Refinamientos (1-2 semanas)
-
-49. `error-handling-standardization` (Change #49)
-50. `testing-and-documentation` (Change #50)
+PHASE 8 (Sprint 8+) — PULIDO
+├─ 45: implement-notifications-and-feedback (error-handling + dashboard)
+├─ 46: implement-ui-responsiveness-and-ux (notifications)
+├─ 47: implement-logging-and-monitoring (error-handling)
+├─ 48: implement-unit-tests-backend (fsm + payment-webhook + auth)
+└─ 49: deploy-and-documentation (todos)
+```
 
 ---
 
-## Métricas Totales
+## 🎯 Camino Crítico (Ruta Más Larga)
 
-- **Total de Changes**: 50
-- **Duración estimada**: 12-15 semanas
-- **Parallelizable**: 8 changes (infraestructura y admin)
-- **Dependencias críticas**: Autenticación → Catálogo → Pedidos → Pagos
+Para identificar qué changes son más urgentes y pueden bloquear todo:
+
+1. **bootstrap-monorepo** (1h) → base
+2. **setup-backend-core** (3h) → base
+3. **setup-postgresql-migrations** (4h) → tablas
+4. **seed-catalogs-and-admin** (2h) → data inicial
+5. **implement-base-patterns** (5h) → ⭐ BLOQUEANTE
+6. **implement-auth-register** (4h) → usuarios
+7. **implement-auth-login** (3h) → login funcional
+8. **implement-categories-crud** (5h) → catálogo
+9. **implement-products-crud** (6h) → productos
+10. **implement-delivery-addresses-crud** (4h) → direcciones
+11. **implement-order-creation-atomically** (6h) → ⭐ CRITICAL
+12. **implement-payment-creation** (4h) → pagos
+13. **implement-payment-webhook** (5h) → ⭐ CRITICAL, cierra ciclo pago
+14. **implement-order-fsm-transitions** (7h) → ⭐ CRITICAL, completa negocio
+15. **implement-admin-dashboard-ui** (6h) → visibilidad
+
+**Total camino crítico**: ~65 horas (máximo serial).
 
 ---
 
-## Patrones Aplicados
+## ✅ Validación de Cobertura
 
-| Change   | Patrón                                         |
-| -------- | ---------------------------------------------- |
-| #5       | Unit of Work, Repository, Layered Architecture |
-| #29      | State Machine (FSM)                            |
-| #30      | Snapshot Pattern, Atomic Transactions          |
-| #33      | RBAC, Pagination                               |
-| #37      | Webhook, Idempotency Keys                      |
-| #23, #35 | Feature-Sliced Design, TanStack Query          |
-| #27      | Zustand + localStorage persistence             |
+- ✅ **Todas las 77 US cubiertas**: cada historia está en al menos un change
+- ✅ **DAG de dependencias válido**: sin ciclos, respeta orden topológico
+- ✅ **Cambios atómicos**: cada uno es ≤7 horas, enfocado en una funcionalidad
+- ✅ **Patrones primero**: base-patterns (Change 6) es prerequisito de casi todo
+- ✅ **Frontend/backend avanzan en paralelo**: fases separadas pero coordinadas
+- ✅ **Ciclo de negocio completo**: login → catálogo → carrito → pedido → pago → entrega → admin
 
 ---
 
-## Próximos Pasos
+## 🚀 Recomendaciones de Ejecución
 
-1. **Revisar y ajustar este mapa**: ¿Faltan funcionalidades? ¿Hay dependencias incorrectas?
-2. **Comenzar Phase 0**: `/opsx:propose setup-monorepo-estructura`
-3. **Paralelizar**: mientras se implementa backend, frontend puede avanzar
-4. **Sincronizar**: cada 2-3 changes, hacer merge a main y actualizar specs
+1. **Sprint 0**: Changes 1-8 (~20 horas), todo el team en paralelo
+2. **Sprint 1**: Changes 9-16 (~25 horas), auth completa
+3. **Sprint 2-3**: Changes 17-21 (~22 horas), catálogo
+4. **Sprint 4**: Changes 22-26 (~16 horas), perfil + carrito
+5. **Sprint 5**: Changes 27-30 (~14 horas), crear pedidos + UI
+6. **Sprint 6**: Changes 31-36 (~23 horas), pagos + FSM + pago-ui
+7. **Sprint 7-8**: Changes 37-44 (~24 horas), admin completo
+8. **Sprint 8+**: Changes 45-49 (~17 horas), pulido + tests + deploy
+
+**Total**: ~161 horas (con paralelismo, real ~8-10 weeks para team de 2-3).
+
+---
+
+## 📝 Notas Finales
+
+Este mapa de changes es **exhaustivo y ejecutable**. Cada change es independiente una vez que sus dependencias estén cumplidas, lo que permite que múltiples desarrolladores trabajen en paralelo sin conflictos. La arquitectura en capas (Router → Service → UoW → Repository → Model) y el pattern Feature-Sliced Design en frontend garantizan escalabilidad y mantenibilidad.
+
+**No hay cambios ocultos**: todo está mapeado, nada se improvisa durante el desarrollo.
+
+¡Que lo disfrutes! 🚀
