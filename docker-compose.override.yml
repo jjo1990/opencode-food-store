@@ -14,7 +14,7 @@ services:
       PYTHONUNBUFFERED: '1'
       LOG_LEVEL: 'DEBUG'
     volumes:
-      - ./apps/backend:/app
+      - ./backend:/app
       - /app/__pycache__
 
   frontend:
@@ -22,5 +22,5 @@ services:
       VITE_API_URL: http://localhost:8000
       DEBUG: 'true'
     volumes:
-      - ./apps/frontend/src:/app/src
+      - ./frontend/src:/app/src
       - /app/node_modules

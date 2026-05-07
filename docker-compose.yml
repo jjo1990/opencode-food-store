@@ -23,7 +23,7 @@ services:
   # FastAPI Backend
   backend:
     build:
-      context: ./apps/backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: food-store-backend
     environment:
@@ -35,13 +35,13 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./apps/backend:/app
+      - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # React Frontend
   frontend:
     build:
-      context: ./apps/frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: food-store-frontend
     environment:
@@ -51,7 +51,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./apps/frontend/src:/app/src
+      - ./frontend/src:/app/src
 
 volumes:
   postgres_data:

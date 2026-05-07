@@ -4,8 +4,8 @@
   "description": "Food Store v5.0 - E-commerce full-stack platform",
   "private": true,
   "workspaces": [
-    "apps/backend",
-    "apps/frontend",
+    "backend",
+    "frontend",
     "packages/*"
   ],
   "engines": {
