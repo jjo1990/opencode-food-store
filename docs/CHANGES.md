@@ -1,5 +1,7 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
+> **Última actualización**: 2026-05-19
+
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
 ---
@@ -1156,6 +1158,26 @@ Para identificar qué changes son más urgentes y pueden bloquear todo:
 8. **Sprint 8+**: Changes 45-49 (~17 horas), pulido + tests + deploy
 
 **Total**: ~161 horas (con paralelismo, real ~8-10 weeks para team de 2-3).
+
+---
+
+## ✅ Ya realizado (archivado en OPSX)
+
+_Cambios completados, implementados y archivados formalmente en OPSX._
+
+### Change 17: `implement-categories-crud`
+
+- **Funcionalidad**: Categorías jerárquicas con padre autoreferencial (CRUD completo)
+- **Historias**: US-007, US-008, US-009, US-010
+- **Estado**: ✅ Hecho (archivado 2026-05-19)
+- **Evidencia**: `openspec/changes/archive/2026-05-19-implement-categories-crud/`
+
+### Change 18: `implement-ingredients-crud`
+
+- **Funcionalidad**: Gestión de ingredientes con flag de alérgenos (CRUD completo)
+- **Historias**: US-011, US-012, US-013, US-014
+- **Estado**: ✅ Hecho (archivado 2026-05-19)
+- **Evidencia**: `openspec/changes/archive/2026-05-19-implement-ingredients-crud/`
 
 ---
 
