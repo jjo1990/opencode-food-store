@@ -10,6 +10,7 @@ from app.auth.router import router as auth_router
 from app.categorias.router import router as categorias_router
 from app.core.config import CORS_ORIGINS
 from app.ingredientes.router import router as ingredientes_router
+from app.productos.router import router as productos_router
 
 app = FastAPI(title="Food Store API", version="0.0.1")
 
@@ -27,6 +28,7 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(categorias_router, prefix="/api/v1")
 app.include_router(ingredientes_router, prefix="/api/v1")
+app.include_router(productos_router, prefix="/api/v1")
 
 
 @app.get("/")

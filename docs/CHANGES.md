@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-05-19
+> **Última actualización**: 2026-05-20
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -349,48 +349,6 @@ _El corazón del negocio: qué venden y cómo lo organizan._
 - **Duración**: ~3 horas
 
 **Por qué**: Similar a categorías, independiente.
-
----
-
-### Change 19: `implement-products-crud`
-
-- **Funcionalidad**: CRUD de productos con relaciones M:M:
-  - **POST /api/v1/productos**: crea producto con nombre, descripción, precio DECIMAL(10,2) ≥0, stock INTEGER ≥0, disponible boolean, imagen URL, categorías (array de IDs), ingredientes (array de IDs)
-  - **GET /api/v1/productos**: (sin filtros, solo admin)
-  - **PUT /api/v1/productos/:id**: modifica cualquier campo
-  - **PATCH /api/v1/productos/:id/disponibilidad**: toggle disponible true/false
-  - **DELETE /api/v1/productos/:id**: soft delete
-  - Tablas intermedias: ProductoCategoria (M:M), ProductoIngrediente (M:M) con campo es_removible
-  - Validaciones: precio >0, stock ≥0, categorías/ingredientes referenciados existen
-  - Roles: ADMIN + STOCK crean/modifican, solo admin puede ver productos no disponibles
-
-- **Historias**: US-015, US-016, US-017, US-020, US-021, US-022
-- **Dependencias**: `implement-categories-crud`, `implement-ingredients-crud`
-- **Orden**: 19
-- **Duración**: ~6 horas
-
-**Por qué**: Necesita categorías e ingredientes ya funcionales.
-
----
-
-### Change 20: `implement-catalog-public-api`
-
-- **Funcionalidad**: Endpoints públicos del catálogo:
-  - **GET /api/v1/productos**: listado paginado (page, size), filtrable por:
-    - categoria_id (una o múltiples)
-    - nombre (búsqueda ILIKE)
-    - rango precio (precio_min, precio_max)
-    - solo productos con disponible=true y eliminado_en IS NULL
-  - **GET /api/v1/productos/:id**: detalle completo con categorías anidadas, ingredientes con es_alergeno, stock (no cantida exacta, solo disponible=true)
-  - **GET /api/v1/categorias**: árbol jerárquico completo (CTE recursivo), solo activas
-  - Todos públicos (sin autenticación requerida)
-
-- **Historias**: US-018, US-019, US-023, US-008
-- **Dependencias**: `implement-products-crud`, `implement-categories-crud`
-- **Orden**: 20
-- **Duración**: ~4 horas
-
-**Por qué**: Necesita CRUD backend funcional.
 
 ---
 
@@ -1178,6 +1136,20 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-011, US-012, US-013, US-014
 - **Estado**: ✅ Hecho (archivado 2026-05-19)
 - **Evidencia**: `openspec/changes/archive/2026-05-19-implement-ingredients-crud/`
+
+### Change 19: `implement-products-crud`
+
+- **Funcionalidad**: CRUD de productos con relaciones M:M (categorías, ingredientes), precio DECIMAL(10,2), stock, toggle disponibilidad, soft delete
+- **Historias**: US-015, US-016, US-017, US-020, US-021, US-022
+- **Estado**: ✅ Hecho (archivado 2026-05-20)
+- **Evidencia**: `openspec/changes/archive/2026-05-20-implement-products-crud/`
+
+### Change 20: `implement-catalog-public-api`
+
+- **Funcionalidad**: Endpoints públicos del catálogo con filtros avanzados (precio_min/max, categoría, nombre ILIKE), role-aware (público ve solo disponibles, admin ve todo), stock oculto al público
+- **Historias**: US-018, US-019, US-023, US-008
+- **Estado**: ✅ Hecho (archivado 2026-05-20)
+- **Evidencia**: `openspec/changes/archive/2026-05-20-implement-catalog-public-api/`
 
 ---
 
