@@ -33,6 +33,12 @@ Thumbs.db
 # Alembic
 *.pyc
 
+# Test artifacts
+test.db
+.coverage
+htmlcov/
+.coverage.*
+
 # Logs
 *.log
 logs/

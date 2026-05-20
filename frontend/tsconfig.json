@@ -11,10 +11,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@types/*": ["./src/types/*"],
+      "@components/*": ["./src/shared/components/*"],
+      "@hooks/*": ["./src/shared/hooks/*"],
+      "@utils/*": ["./src/shared/utils/*"],
+      "@types/*": ["./src/shared/types/*"],
       "@food-store/types": ["../../packages/types"],
       "@food-store/utils": ["../../packages/utils"]
     },

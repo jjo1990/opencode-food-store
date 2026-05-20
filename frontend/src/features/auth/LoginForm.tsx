@@ -1,7 +1,3 @@
-/**
- * Login Form - User authentication form
- * Following FSD: features/auth/ directory
- */
 import { useForm } from '@tanstack/react-form';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -30,43 +26,71 @@ export function LoginForm() {
     },
   });
 
+  const Field = form.Field;
+
   return (
-    <form onSubmit={form.handleSubmit} className="auth-form">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className="auth-form"
+    >
       <h2>Iniciar Sesión</h2>
 
       {submitError && <div className="error-message">{submitError}</div>}
 
-      <div className="form-field">
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          {...form.register('email', {
-            required: 'Email es requerido',
-            validate: (value) =>
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Email inválido',
-          })}
-          placeholder="tu@email.com"
-        />
-        {form.fieldMeta('email').isTouched && form.fieldMeta('email').error && (
-          <span className="field-error">{form.fieldMeta('email').error}</span>
+      <Field
+        name="email"
+        validators={{
+          onChange: ({ value }) =>
+            !value
+              ? 'Email es requerido'
+              : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                ? 'Email inválido'
+                : undefined,
+        }}
+      >
+        {(field) => (
+          <div className="form-field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="tu@email.com"
+            />
+            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+              <span className="field-error">{field.state.meta.errors.join(', ')}</span>
+            )}
+          </div>
         )}
-      </div>
+      </Field>
 
-      <div className="form-field">
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          {...form.register('password', {
-            required: 'Contraseña es requerida',
-          })}
-          placeholder="••••••••"
-        />
-        {form.fieldMeta('password').isTouched && form.fieldMeta('password').error && (
-          <span className="field-error">{form.fieldMeta('password').error}</span>
+      <Field
+        name="password"
+        validators={{
+          onChange: ({ value }) => (!value ? 'Contraseña es requerida' : undefined),
+        }}
+      >
+        {(field) => (
+          <div className="form-field">
+            <label htmlFor="password">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="••••••••"
+            />
+            {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+              <span className="field-error">{field.state.meta.errors.join(', ')}</span>
+            )}
+          </div>
         )}
-      </div>
+      </Field>
 
       <button type="submit" disabled={isLoading} className="submit-btn">
         {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}

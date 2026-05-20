@@ -14,17 +14,27 @@ Skills provide specialized instructions and patterns for specific tasks.
 
 ### System Skills (Installed)
 
-| Skill | Location | Purpose |
-|-------|----------|---------|
-| **find-skills** | `.agents/skills/find-skills/` | Discover and install new agent skills |
-| **branch-pr** | Global | GitHub PR creation workflow |
-| **issue-creation** | Global | GitHub issue management |
-| **openspec-*** | Global | OPSX workflow (propose, apply, archive, verify) |
-| **judgment-day** | Global | Adversarial review protocol |
+| Skill              | Location                      | Purpose                                         |
+| ------------------ | ----------------------------- | ----------------------------------------------- |
+| **find-skills**    | `.agents/skills/find-skills/` | Discover and install new agent skills           |
+| **branch-pr**      | Global                        | GitHub PR creation workflow                     |
+| **issue-creation** | Global                        | GitHub issue management                         |
+| **openspec-\***    | Global                        | OPSX workflow (propose, apply, archive, verify) |
+| **judgment-day**   | Global                        | Adversarial review protocol                     |
 
 ### Project Skills (Custom)
 
-#### 1. **FastAPI Testing**
+#### 1. **Frontend Design**
+
+- **Location**: `.agents/skills/frontend-design/SKILL.md`
+- **Purpose**: FSD structure, React components, TanStack Query, Zustand, Tailwind, Axios patterns
+- **Coverage**: Component lifecycle (loading/error/empty/data), URL state sync, entity types, API modules
+- **Key Files**: `frontend/src/`
+- **When to Use**: Creating/modifying any React component, hook, store, or page
+- **Example**: Catalog page with filters, product detail, shared UI components
+
+#### 2. **FastAPI Testing**
+
 - **Location**: `.agents/skills/fastapi-testing/SKILL.md`
 - **Purpose**: Unit, integration, E2E testing patterns for FastAPI
 - **Coverage**: Pytest fixtures, mocking, async testing, database fixtures
@@ -33,6 +43,7 @@ Skills provide specialized instructions and patterns for specific tasks.
 - **Example**: Testing JWT authentication, user registration
 
 #### 2. **React Testing**
+
 - **Location**: `.agents/skills/react-testing/SKILL.md`
 - **Purpose**: Component, hook, and store testing patterns
 - **Coverage**: Jest setup, React Testing Library queries, user interactions
@@ -41,6 +52,7 @@ Skills provide specialized instructions and patterns for specific tasks.
 - **Example**: Testing login form, protected routes
 
 #### 3. **Database Design**
+
 - **Location**: `.agents/skills/database-design/SKILL.md`
 - **Purpose**: PostgreSQL schema design, normalization, Alembic migrations
 - **Coverage**: Entity relationships, indexing, query optimization, constraints
@@ -49,6 +61,7 @@ Skills provide specialized instructions and patterns for specific tasks.
 - **Example**: User authentication schema, order management entities
 
 #### 4. **API Design**
+
 - **Location**: `.agents/skills/api-design/SKILL.md`
 - **Purpose**: REST API endpoint design, status codes, documentation
 - **Coverage**: CRUD patterns, error handling, pagination, versioning
@@ -63,6 +76,7 @@ Skills provide specialized instructions and patterns for specific tasks.
 MCPs provide direct access to external systems and tools.
 
 ### 1. **PostgreSQL MCP**
+
 - **Location**: `.agents/mcps/postgresql.md`
 - **Purpose**: Direct database access for queries, schema inspection, migrations
 - **Capabilities**:
@@ -71,7 +85,7 @@ MCPs provide direct access to external systems and tools.
   - Verify migrations with Alembic
   - Performance analysis
 - **Connection**: `postgresql://food_store_user:food_store_password@localhost:5432/food_store`
-- **When to Use**: 
+- **When to Use**:
   - Inspecting database schema
   - Verifying data after migrations
   - Analyzing query performance
@@ -79,6 +93,7 @@ MCPs provide direct access to external systems and tools.
 - **Example**: `SELECT * FROM users WHERE is_active = true;`
 
 ### 2. **GitHub MCP**
+
 - **Location**: `.agents/mcps/github.md`
 - **Purpose**: Repository management, issues, PRs, workflows
 - **Capabilities**:
@@ -95,6 +110,7 @@ MCPs provide direct access to external systems and tools.
 - **Example**: `gh pr create --title "feat(auth): JWT implementation"`
 
 ### 3. **Filesystem MCP**
+
 - **Location**: `.agents/mcps/filesystem.md`
 - **Purpose**: File search, directory analysis, bulk operations
 - **Capabilities**:
@@ -154,15 +170,15 @@ MCPs provide direct access to external systems and tools.
 
 ### Common Tasks & Skills
 
-| Task | Skill | MCP |
-|------|-------|-----|
-| Design user table | database-design | PostgreSQL |
-| Create login endpoint | api-design | - |
-| Test login form | react-testing | - |
-| Test login API | fastapi-testing | - |
-| Find auth files | - | Filesystem |
-| Check migration status | - | PostgreSQL |
-| Create PR for Phase 1 | - | GitHub |
+| Task                   | Skill           | MCP        |
+| ---------------------- | --------------- | ---------- |
+| Design user table      | database-design | PostgreSQL |
+| Create login endpoint  | api-design      | -          |
+| Test login form        | react-testing   | -          |
+| Test login API         | fastapi-testing | -          |
+| Find auth files        | -               | Filesystem |
+| Check migration status | -               | PostgreSQL |
+| Create PR for Phase 1  | -               | GitHub     |
 
 ### File Organization
 
@@ -202,6 +218,7 @@ food-store/
 ## 🚀 Phase 1: Authentication Checklist
 
 ### Design Phase
+
 - [ ] Load `database-design` skill
 - [ ] Design user, refresh_token, audit_log tables
 - [ ] Use PostgreSQL MCP to verify schema
@@ -211,6 +228,7 @@ food-store/
 - [ ] Define request/response schemas
 
 ### Implementation Phase
+
 - [ ] Backend: Create models (use database-design)
 - [ ] Backend: Create migrations (Alembic)
 - [ ] Backend: Implement routes (use api-design)
@@ -221,6 +239,7 @@ food-store/
 - [ ] Frontend: Add tests (use react-testing)
 
 ### Verification Phase
+
 - [ ] Use PostgreSQL MCP to check schema
 - [ ] Use Filesystem MCP to find all auth files
 - [ ] Use GitHub MCP to create Phase 1 PR
@@ -237,6 +256,7 @@ food-store/
 3. Update this registry with new skill info
 
 Example:
+
 ```bash
 mkdir -p .agents/skills/new-skill
 touch .agents/skills/new-skill/SKILL.md
@@ -251,6 +271,7 @@ touch .agents/skills/new-skill/SKILL.md
 ### Updating Registry
 
 After adding skills/MCPs:
+
 ```bash
 # This registry is the source of truth
 # Update manually or use find-skills for discovery
@@ -261,14 +282,18 @@ After adding skills/MCPs:
 ## 📞 Support & Troubleshooting
 
 ### Can't Find a File?
+
 Use **Filesystem MCP** with glob patterns:
+
 ```
 find backend -name "*auth*"
 find . -path "*/migrations/*"
 ```
 
 ### Need to Design a Table?
+
 Load **Database Design** skill and follow the patterns:
+
 ```
 - Normalize to 3NF
 - Add timestamps
@@ -277,7 +302,9 @@ Load **Database Design** skill and follow the patterns:
 ```
 
 ### Need to Design an Endpoint?
+
 Load **API Design** skill and follow conventions:
+
 ```
 - Resource-based URLs
 - Appropriate HTTP methods
@@ -286,7 +313,9 @@ Load **API Design** skill and follow conventions:
 ```
 
 ### Need to Write Tests?
+
 Load the appropriate testing skill:
+
 ```
 - Backend: fastapi-testing
 - Frontend: react-testing

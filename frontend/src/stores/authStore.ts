@@ -4,7 +4,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { authApi, type TokenResponse, type UserResponse } from '../shared/api/authApi';
+import { authApi, type TokenResponse } from '../shared/api/authApi';
 
 interface User {
   id: string;
@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ refreshToken: localStorage.getItem('refreshToken') }), // Persist refreshToken in localStorage
+      partialize: () => ({ refreshToken: localStorage.getItem('refreshToken') }),
     }
   )
 );

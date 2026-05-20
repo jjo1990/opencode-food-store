@@ -1,8 +1,4 @@
-/**
- * Protected Route - HOC for protecting routes that require authentication
- * Following FSD: features/auth/ directory
- */
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -11,37 +7,41 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary" />
+        <p className="text-sm text-gray-500">Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const isLoading = useAuthStore((state) => state.isLoading);
   const location = useLocation();
 
-  // If still loading, show nothing (or a spinner)
   if (isLoading) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner">Cargando...</div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
-  // If not authenticated, redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If roles are specified, check if user has one of them
   if (allowedRoles && allowedRoles.length > 0) {
     const userRoles = user?.roles || [];
     const hasAllowedRole = allowedRoles.some((role) => userRoles.includes(role));
 
     if (!hasAllowedRole) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/catalog" replace />;
     }
   }
 
-  return <>{children}</>;
+  return <Suspense fallback={<LoadingFallback />}>{children}</Suspense>;
 }
 
 export default ProtectedRoute;

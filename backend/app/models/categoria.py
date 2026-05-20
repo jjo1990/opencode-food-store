@@ -25,9 +25,7 @@ class Categoria(Base):
     soft_deleted_at = Column(DateTime, nullable=True, index=True)
 
     # Relationships
-    children = relationship(
-        "Categoria", backref="parent", remote_side=[id], cascade="all, delete-orphan"
-    )
+    children = relationship("Categoria", backref="parent", remote_side=[id])
 
     __table_args__ = (Index("idx_categoria_parent", "parent_id"),)
 

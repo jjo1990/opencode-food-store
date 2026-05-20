@@ -287,25 +287,6 @@ _La puerta de entrada al sistema. Sin esto, no hay seguridad._
 
 ---
 
-### Change 16: `implement-navigation-by-role`
-
-- **Funcionalidad**: Navegación adaptada por rol:
-  - Componente `Navigation` / `Sidebar` que renderiza opciones según roles del usuario (del authStore)
-  - **CLIENT**: Catálogo, Mi Carrito, Mis Pedidos, Mi Perfil, Mis Direcciones
-  - **STOCK**: Productos, Categorías, Ingredientes, Stock
-  - **PEDIDOS**: Panel de Pedidos
-  - **ADMIN**: Todas las opciones anteriores + Usuarios, Métricas, Configuración
-  - Usuario no autenticado: Catálogo, Login, Registrarse
-  - Lazy loading: módulos de features se cargan dinámicamente según rol
-  - Guards de rutas frontend: previene navegación directa a rutas no permitidas
-
-- **Historias**: US-075, US-076
-- **Dependencias**: `implement-route-protection`, `implement-frontend-auth-ui`
-- **Orden**: 16
-- **Duración**: ~4 horas
-
-**Por qué**: Necesita autenticación funcional y protección de rutas.
-
 ---
 
 ---
@@ -352,24 +333,6 @@ _El corazón del negocio: qué venden y cómo lo organizan._
 
 ---
 
-### Change 21: `implement-catalog-frontend-ui`
-
-- **Funcionalidad**: Interfaz del catálogo:
-  - Componente `ProductGrid`: grid responsive, cards con imagen/nombre/precio, badge disponible/agotado
-  - Componente `ProductDetail`: modal o página con descripción, ingredientes (alergenos resaltados), precio, botón agregar al carrito
-  - Componente `CategoryNav`: navegación jerárquica de categorías (horizontal o sidebar expandible)
-  - Filtros: selector de categoría, input de búsqueda con debounce 300ms, rango precio con sliders, aplicar/limpiar filtros
-  - Paginación: botones anterior/siguiente, selectores de página
-  - Skeleton loaders: durante fetch
-  - TanStack Query: useQuery para catálogo, invalidación en cambios de filtro
-
-- **Historias**: US-018, US-019, US-023
-- **Dependencias**: `implement-catalog-public-api`, `setup-frontend-core`
-- **Orden**: 21
-- **Duración**: ~6 horas
-
-**Por qué**: Necesita API pública funcional y setup frontend.
-
 ---
 
 ---
@@ -377,22 +340,6 @@ _El corazón del negocio: qué venden y cómo lo organizan._
 ## 👤 PHASE 3 — GESTIÓN DEL PERFIL Y DIRECCIONES (Sprint 4)
 
 _Los datos personales del cliente, necesarios para hacer entregas y contacto._
-
-### Change 22: `implement-user-profile-crud`
-
-- **Funcionalidad**: Gestión del perfil del usuario autenticado:
-  - **GET /api/v1/perfil**: retorna datos del usuario (id, nombre, email, teléfono, creado_en)
-  - **PUT /api/v1/perfil**: modifica nombre, teléfono (solo del usuario autenticado, via JWT)
-  - **PUT /api/v1/perfil/contrasena**: endpoint separado que pide contraseña actual + nueva, valida, hashea nueva, invalida TODOS los refresh tokens del usuario (force logout en otros dispositivos)
-  - Soft delete de usuario: solo admin, marca eliminado_en
-  - Validaciones: nombre ≥2 caracteres, teléfono formato válido (opcional)
-
-- **Historias**: US-061, US-062, US-063
-- **Dependencias**: `implement-route-protection`
-- **Orden**: 22
-- **Duración**: ~3 horas
-
-**Por qué**: Necesita autenticación y protección de rutas.
 
 ---
 
@@ -1123,6 +1070,13 @@ Para identificar qué changes son más urgentes y pueden bloquear todo:
 
 _Cambios completados, implementados y archivados formalmente en OPSX._
 
+### Change 16: `implement-navigation-by-role`
+
+- **Funcionalidad**: Navegación adaptada por rol — Header, Navigation y Sidebar con menú contextual según rol (CLIENT/ADMIN/STOCK/PEDIDOS), lazy loading de módulos con React.lazy(), guards de rutas con ProtectedRoute + allowedRoles, 15 rutas en router, 11 páginas stub, configuración centralizada en shared/config/navigation.ts
+- **Historias**: US-075, US-076
+- **Estado**: ✅ Hecho (archivado 2026-05-20)
+- **Evidencia**: `openspec/changes/archive/2026-05-20-implement-navigation-by-role/`
+
 ### Change 17: `implement-categories-crud`
 
 - **Funcionalidad**: Categorías jerárquicas con padre autoreferencial (CRUD completo)
@@ -1150,6 +1104,20 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-018, US-019, US-023, US-008
 - **Estado**: ✅ Hecho (archivado 2026-05-20)
 - **Evidencia**: `openspec/changes/archive/2026-05-20-implement-catalog-public-api/`
+
+### Change 21: `implement-catalog-frontend-ui`
+
+- **Funcionalidad**: Catálogo público frontend — Router + Providers + Tailwind CSS + componentes base. ProductGrid responsive, CategoryNav jerárquico, filtros combinados (búsqueda, precio, categoría), paginación server-side, ProductDetail con alérgenos resaltados, skeleton loaders. TanStack Query + Zustand + URL sync.
+- **Historias**: US-018, US-019, US-023
+- **Estado**: ✅ Hecho (archivado 2026-05-20)
+- **Evidencia**: `openspec/changes/archive/2026-05-20-implement-catalog-frontend-ui/`
+
+### Change 22: `implement-user-profile-crud`
+
+- **Funcionalidad**: Perfil de usuario autenticado — GET /me (perfil completo con teléfono), PUT /me (actualizar nombre y teléfono), PUT /me/contrasena (cambio con verificación + invalida refresh tokens), DELETE /me (soft delete solo CLIENT). Módulo usuarios/ feature-first. UserResponse extendido con telefono.
+- **Historias**: US-061, US-062, US-063
+- **Estado**: ✅ Hecho (archivado 2026-05-20)
+- **Evidencia**: `openspec/changes/archive/2026-05-20-implement-user-profile-crud/`
 
 ---
 

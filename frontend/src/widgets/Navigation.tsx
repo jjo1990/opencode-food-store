@@ -1,74 +1,52 @@
-/**
- * Navigation - Main navigation component with role-based menu items
- * Following FSD: widgets/ directory
- */
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { useNavigate } from 'react-router-dom';
+import { getMenuItemsByRole } from '../shared/config/navigation';
 
 export function Navigation() {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  const getMenuItems = () => {
-    const roles = user?.roles || [];
-
-    if (roles.includes('ADMIN')) {
-      return [
-        { label: 'Dashboard', path: '/admin', icon: '📊' },
-        { label: 'Usuarios', path: '/admin/users', icon: '👥' },
-        { label: 'Catálogo', path: '/admin/products', icon: '🏪' },
-        { label: 'Stock', path: '/admin/stock', icon: '📦' },
-        { label: 'Pedidos', path: '/admin/orders', icon: '📋' },
-        { label: 'Reportes', path: '/admin/reports', icon: '📈' },
-      ];
-    }
-
-    if (roles.includes('STOCK')) {
-      return [
-        { label: 'Productos', path: '/stock/products', icon: '🏪' },
-        { label: 'Categorías', path: '/stock/categories', icon: '🏷️' },
-        { label: 'Gestionar Stock', path: '/stock/manage', icon: '📦' },
-      ];
-    }
-
-    if (roles.includes('PEDIDOS')) {
-      return [
-        { label: 'Panel de Pedidos', path: '/orders', icon: '📋' },
-        { label: 'Reportes', path: '/orders/reports', icon: '📈' },
-      ];
-    }
-
-    // CLIENT
-    return [
-      { label: 'Catálogo', path: '/catalog', icon: '🏪' },
-      { label: 'Mi Carrito', path: '/cart', icon: '🛒' },
-      { label: 'Mis Pedidos', path: '/orders', icon: '📦' },
-      { label: 'Perfil', path: '/profile', icon: '👤' },
-    ];
-  };
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuthStore();
+  const roles = user?.roles || [];
+  const items = getMenuItemsByRole(roles);
 
   return (
-    <nav className="main-navigation">
-      <div className="nav-brand">
-        <span>🍔</span> Food Store
+    <nav className="border-b border-gray-200 bg-white">
+      <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="hidden items-center gap-1 md:flex">
+          {items.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            >
+              {item.icon} {item.label}
+            </Link>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+        >
+          {mobileOpen ? '✕' : '☰'}
+        </button>
       </div>
-      <div className="nav-menu">
-        {getMenuItems().map((item) => (
-          <a key={item.path} href={item.path} className="nav-item">
-            {item.icon} {item.label}
-          </a>
-        ))}
-      </div>
-      <div className="nav-user">
-        <span>{user?.email}</span>
-        <button onClick={handleLogout}>Cerrar Sesión</button>
-      </div>
+
+      {mobileOpen && (
+        <div className="border-t border-gray-100 px-4 pb-4 pt-2 md:hidden">
+          {items.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }

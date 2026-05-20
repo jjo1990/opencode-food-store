@@ -20,15 +20,19 @@ export function DashboardPage() {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <h1>Bienvenido{a user?.email ? `, ${user.email.split('@')[0]}` : ''}</h1>
+        <h1>Bienvenido{user?.email ? `, ${user.email.split('@')[0]}` : ''}</h1>
         <p>Has iniciado sesión exitosamente</p>
       </div>
 
       <div className="dashboard-content">
         <div className="user-info-card">
           <h3>Información de tu cuenta</h3>
-          <p><strong>Email:</strong> {user?.email}</p>
-          <p><strong>Roles:</strong> {user?.roles?.map(getRoleLabel).join(', ')}</p>
+          <p>
+            <strong>Email:</strong> {user?.email}
+          </p>
+          <p>
+            <strong>Roles:</strong> {user?.roles?.map(getRoleLabel).join(', ')}
+          </p>
         </div>
 
         <div className="quick-actions">
