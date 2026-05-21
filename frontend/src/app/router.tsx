@@ -5,6 +5,8 @@ import { Footer } from '../widgets/Footer';
 import { ProtectedRoute } from '../features/auth/ProtectedRoute';
 import { CatalogPage } from '../pages/CatalogPage';
 import { ProductDetailPage } from '../pages/ProductDetailPage';
+import { ProfilePage } from '../pages/ProfilePage';
+import { AddressesPage } from '../pages/AddressesPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage'));
@@ -128,6 +130,23 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['PEDIDOS']}>
             <PedidosReportsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: '/profile',
+        element: (
+          <ProtectedRoute allowedRoles={['CLIENT']}>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/addresses',
+        element: (
+          <ProtectedRoute allowedRoles={['CLIENT']}>
+            <AddressesPage />
           </ProtectedRoute>
         ),
       },

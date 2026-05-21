@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-05-20
+> **Última actualización**: 2026-05-21
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -343,44 +343,7 @@ _Los datos personales del cliente, necesarios para hacer entregas y contacto._
 
 ---
 
-### Change 23: `implement-delivery-addresses-crud`
-
-- **Funcionalidad**: CRUD de direcciones de entrega:
-  - **POST /api/v1/direcciones**: crea dirección con alias, linea1, linea2 (opcional), ciudad, código_postal, referencia (opcional), es_principal booleano
-  - **GET /api/v1/direcciones**: lista direcciones del usuario autenticado
-  - **GET /api/v1/direcciones/:id**: detalle de dirección (verifica ownership)
-  - **PUT /api/v1/direcciones/:id**: modifica dirección (solo propietario)
-  - **PATCH /api/v1/direcciones/:id/principal**: setea como principal (desactiva anterior principal)
-  - **DELETE /api/v1/direcciones/:id**: soft delete (solo propietario)
-  - Validación: solo una principal por usuario, no se puede eliminar si es la única
-  - Primera dirección creada se marca automáticamente como principal
-  - Tabla: DireccionEntrega con usuario_id FK, es_principal UNIQUE CONSTRAINT (usuario_id, es_principal=true)
-
-- **Historias**: US-024, US-025, US-026, US-027, US-028
-- **Dependencias**: `implement-user-profile-crud`
-- **Orden**: 23
-- **Duración**: ~4 horas
-
-**Por qué**: Necesita perfil funcional para vincular direcciones a usuario.
-
 ---
-
-### Change 24: `implement-user-profile-frontend`
-
-- **Funcionalidad**: Interfaz de perfil y direcciones:
-  - Página `ProfilePage`: sección editable de nombre/teléfono (form inline), sección cambiar contraseña (modal con confirmación)
-  - Página `AddressesPage`: tabla de direcciones con alias/calle/ciudad, botones editar/eliminar, indicador de principal (estrella)
-  - Modal `AddEditAddressForm`: inputs para alias, dirección, checkbox "establecer como principal"
-  - Confirmación de eliminación: modal con advertencia
-  - TanStack Query: useQuery para direcciones, useMutation para crear/actualizar/eliminar con invalidación
-  - Validación inline de inputs
-
-- **Historias**: US-061, US-062, US-063, US-024-US-028 (frontend)
-- **Dependencias**: `implement-user-profile-crud`, `implement-delivery-addresses-crud`
-- **Orden**: 24
-- **Duración**: ~5 horas
-
-**Por qué**: Necesita endpoints de perfil y direcciones funcionales.
 
 ---
 
@@ -390,68 +353,7 @@ _Los datos personales del cliente, necesarios para hacer entregas y contacto._
 
 _El estado del cliente durante la compra, persistente y validable._
 
-### Change 25: `implement-cart-zustand-store`
-
-- **Funcionalidad**: Store Zustand para carrito:
-  - Estado: `items` array de {producto_id, nombre, imagen, precio, cantidad, personalizacion: ingredientIds[]}
-  - Acciones:
-    - `addItem(producto, cantidad, personalizacion)`: si producto ya existe, incrementa cantidad; valida que personalizacion sean ingredientes del producto
-    - `updateQuantity(productoId, cantidad)`: actualiza cantidad, elimina si cantidad <= 0
-    - `removeItem(productoId)`: elimina del carrito
-    - `clearCart()`: vacía todo
-  - Selectores:
-    - `totalItems()`: suma de cantidades
-    - `totalPrice()`: suma(cantidad \* precio)
-    - `getItem(productoId)`: obtiene ítem específico
-  - Persistencia: localStorage con clave `food-store-cart`, middleware persist
-  - Sobrevive a: cierre del navegador, refresh de página, logout/login
-
-- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
-- **Dependencias**: `setup-zustand-stores`
-- **Orden**: 25
-- **Duración**: ~3 horas
-
-**Por qué**: Necesita Zustand configurado.
-
 ---
-
-### Change 26: `implement-cart-frontend-ui`
-
-- **Funcionalidad**: Interfaz del carrito:
-  - Componente `CartDrawer`: drawer deslizable desde la derecha, título "Mi Carrito", lista de ítems, totales (subtotal, envío, total), botones "Vaciar" (con confirmación) y "Ir a Pagar"
-  - Componente `CartItem`: cada línea con imagen (pequeña), nombre, precio, cantidad (botones +/-), botón eliminar, lista visual de exclusiones (ingredientes removidos)
-  - Componente `CartSummary`: muestra totales en mini sidebar o footer, badge con cantidad de ítems
-  - Acceso: botón flotante o en header
-  - Interactividad: agregar al carrito desde ProductDetail, qty incremental o directa
-  - TanStack Query invalidation: cuando producto es modificado, actualizar carrito localmente (precio obsoleto → advertencia)
-  - Responsive: drawer adapta a mobile, full width en pantalla chica
-
-- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
-- **Dependencias**: `implement-cart-zustand-store`, `implement-catalog-frontend-ui`
-- **Orden**: 26
-- **Duración**: ~5 horas
-
-**Por qué**: Necesita store de carrito + catálogo UI.
-
----
-
-### Change 27: `implement-checkout-validation`
-
-- **Funcionalidad**: Pre-validación antes de crear pedido:
-  - Endpoint `POST /api/v1/pedidos/validar`: recibe items del carrito, verifica:
-    - Producto existe y está disponible
-    - Stock suficiente (SELECT FOR UPDATE dentro de UoW)
-    - Personalizaciones válidas (ingredientes existen en producto)
-    - Precio actual vs precio que pagará (advertencia si cambió)
-  - Retorna: `{ valido: true, advertencias: [...] }` o `{ valido: false, errores: [...] }`
-  - Frontend: pre-submit en formulario checkout, muestra advertencias/errores antes de confirmar pago
-
-- **Historias**: US-069, US-070
-- **Dependencias**: `implement-products-crud`, `implement-cart-zustand-store`
-- **Orden**: 27
-- **Duración**: ~3 horas
-
-**Por qué**: Necesita productos funcionales y carrito tipado.
 
 ---
 
@@ -1118,6 +1020,41 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-061, US-062, US-063
 - **Estado**: ✅ Hecho (archivado 2026-05-20)
 - **Evidencia**: `openspec/changes/archive/2026-05-20-implement-user-profile-crud/`
+
+### Change 23: `implement-delivery-addresses-crud`
+
+- **Funcionalidad**: CRUD de direcciones de entrega — modelo `DireccionEntrega` con partial unique index `(usuario_id, es_principal)`, 6 endpoints (POST/GET/GET by id/PUT/PATCH principal/DELETE), validación de ownership, auto-primera-dirección-como-principal, protección no-eliminar-si-única, soft delete. Migración Alembic aplicada.
+- **Historias**: US-024, US-025, US-026, US-027, US-028
+- **Estado**: ✅ Hecho (archivado 2026-05-21)
+- **Evidencia**: `openspec/changes/archive/2026-05-21-implement-delivery-addresses-crud/`
+
+### Change 24: `implement-user-profile-frontend`
+
+- **Funcionalidad**: Interfaz de perfil y direcciones — 14 archivos frontend creados siguiendo FSD. Página `/profile` con ProfileForm (edición inline nombre/teléfono) y PasswordForm (modal cambio de contraseña). Página `/addresses` con AddressList + AddressCard + AddressForm (modal crear/editar) + confirmación de eliminación. Modal shared component reutilizable. TanStack Query hooks en entities/. TypeScript strict, build exitoso.
+- **Historias**: US-061, US-062, US-063, US-024-US-028 (frontend)
+- **Estado**: ✅ Hecho (archivado 2026-05-21)
+- **Evidencia**: `openspec/changes/archive/2026-05-21-implement-user-profile-frontend/`
+
+### Change 25: `implement-cart-zustand-store`
+
+- **Funcionalidad**: Store Zustand para carrito de compras con persistencia localStorage. `CartItem` con producto_id, nombre, imagen_url, precio, cantidad, personalizacion (ingredientIds[]). Acciones: addItem (incrementa si existe con misma personalización), updateQuantity (elimina si ≤ 0), removeItem, updateItemPersonalization (mergea si ya existe con nueva personalización), clearCart. Selectores: getTotalItems(), getTotalPrice(), getItem(). Persist middleware clave `food-store-cart`.
+- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
+- **Estado**: ✅ Hecho (archivado 2026-05-21)
+- **Evidencia**: `openspec/changes/archive/2026-05-21-implement-cart-zustand-store/`
+
+### Change 26: `implement-cart-frontend-ui`
+
+- **Funcionalidad**: Interfaz visual del carrito de compras — CartDrawer (portal + overlay + slide animation) con lista de CartItemRow (imagen, nombre, precio, +/- qty, remove, ingredientes removidos), CartSummary (subtotal, envío, total, botones "Ir a pagar" y "Vaciar carrito" con confirmación), badge en Header con cantidad, botón "Agregar al carrito" funcional en ProductDetail con toast. Respeta FSD estricto.
+- **Historias**: US-029, US-030, US-031, US-032, US-033, US-034
+- **Estado**: ✅ Hecho (archivado 2026-05-21)
+- **Evidencia**: `openspec/changes/archive/2026-05-21-implement-cart-frontend-ui/`
+
+### Change 27: `implement-checkout-validation`
+
+- **Funcionalidad**: Endpoint `POST /api/v1/checkout/validar` — valida items del carrito antes de crear pedido. Verifica: existencia, disponibilidad, stock suficiente, personalizaciones válidas (ingredientes existen y son removibles), y detecta cambios de precio. Respuesta con errores/advertencias/detalles por item. Sin autenticación.
+- **Historias**: US-069, US-070
+- **Estado**: ✅ Hecho (archivado 2026-05-21)
+- **Evidencia**: `openspec/changes/archive/2026-05-21-implement-checkout-validation/`
 
 ---
 

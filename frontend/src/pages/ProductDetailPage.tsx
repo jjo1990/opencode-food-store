@@ -1,10 +1,25 @@
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../entities/product/api';
 import { ProductDetail } from '../features/catalog/components/ProductDetail';
+import { useCartStore } from '../stores/cartStore';
+import toast from 'react-hot-toast';
+import type { Product } from '../entities/product/types';
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading, isError, error, refetch } = useProduct(slug || '');
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      producto_id: product.id,
+      nombre: product.nombre,
+      imagen_url: product.imagenes?.[0]?.url ?? null,
+      precio: product.precio,
+      personalizacion: [],
+    });
+    toast.success('Agregado al carrito');
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -31,6 +46,7 @@ export function ProductDetailPage() {
         isError={isError}
         error={error}
         onRetry={() => refetch()}
+        onAddToCart={handleAddToCart}
       />
     </div>
   );

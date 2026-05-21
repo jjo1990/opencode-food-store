@@ -9,12 +9,20 @@ interface ProductDetailProps {
   isError: boolean;
   error: Error | null;
   onRetry: () => void;
+  onAddToCart?: (product: Product) => void;
 }
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(price);
 
-export function ProductDetail({ product, isLoading, isError, error, onRetry }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  isLoading,
+  isError,
+  error,
+  onRetry,
+  onAddToCart,
+}: ProductDetailProps) {
   if (isLoading) {
     return (
       <div className="grid gap-8 md:grid-cols-2">
@@ -121,7 +129,11 @@ export function ProductDetail({ product, isLoading, isError, error, onRetry }: P
         )}
 
         <div className="mt-auto pt-4">
-          <Button className="w-full" disabled={!product.disponible}>
+          <Button
+            className="w-full"
+            disabled={!product.disponible}
+            onClick={() => onAddToCart?.(product)}
+          >
             Agregar al carrito
           </Button>
         </div>
