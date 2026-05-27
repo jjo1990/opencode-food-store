@@ -1,15 +1,17 @@
 import { useState, useCallback } from 'react';
-import { useOrders } from '../../entities/order/api';
-import { OrderList } from '../../features/orders/components/OrderList';
-import { OrderDetailModal } from '../../features/orders/components/OrderDetail';
-import { Skeleton } from '../../shared/components/Skeleton';
-import { ErrorDisplay } from '../../shared/components/ErrorDisplay';
-import { EmptyState } from '../../shared/components/EmptyState';
-import type { Order } from '../../entities/order/types';
+import { useNavigate } from 'react-router-dom';
+import { useOrders } from '../entities/order/api';
+import { OrderList } from '../features/orders/components/OrderList';
+import { OrderDetailModal } from '../features/orders/components/OrderDetail';
+import { Skeleton } from '../shared/components/Skeleton';
+import { ErrorDisplay } from '../shared/components/ErrorDisplay';
+import { EmptyState } from '../shared/components/EmptyState';
+import type { Order } from '../entities/order/types';
 
-export function PedidosPanelPage() {
+export function OrdersPage() {
   const [skip, setSkip] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const navigate = useNavigate();
   const limit = 20;
 
   const { data, isLoading, isError, error, refetch } = useOrders({ skip, limit });
@@ -42,14 +44,18 @@ export function PedidosPanelPage() {
   if (!data || data.items.length === 0) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <EmptyState title="No hay pedidos" description="No se encontraron pedidos registrados." />
+        <EmptyState
+          title="Aún no tienes pedidos"
+          description="Explora nuestro catálogo y realiza tu primer pedido."
+          action={{ label: 'Ir al catálogo', onClick: () => navigate('/catalog') }}
+        />
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">Mis Pedidos</h1>
       <OrderList
         orders={data.items}
         total={data.total}
@@ -69,4 +75,4 @@ export function PedidosPanelPage() {
   );
 }
 
-export default PedidosPanelPage;
+export default OrdersPage;

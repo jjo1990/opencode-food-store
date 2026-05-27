@@ -1,6 +1,7 @@
 """
 Configuration management
 """
+
 import os
 from datetime import timedelta
 
@@ -19,6 +20,9 @@ CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 # Rate Limiting
 RATE_LIMIT_LOGIN_ATTEMPTS = 5
 RATE_LIMIT_LOGIN_MINUTES = 15
+
+# MercadoPago Configuration
+MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
 
 # Derived values
 ACCESS_TOKEN_EXPIRE_TIMEDELTA = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

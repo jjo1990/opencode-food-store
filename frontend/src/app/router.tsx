@@ -20,6 +20,7 @@ const StockProductsPage = lazy(() => import('../pages/stock/StockProductsPage'))
 const StockCategoriesPage = lazy(() => import('../pages/stock/StockCategoriesPage'));
 const StockManagePage = lazy(() => import('../pages/stock/StockManagePage'));
 
+const OrdersPage = lazy(() => import('../pages/OrdersPage'));
 const PedidosPanelPage = lazy(() => import('../pages/pedidos/PedidosPanelPage'));
 const PedidosReportsPage = lazy(() => import('../pages/pedidos/PedidosReportsPage'));
 
@@ -134,6 +135,14 @@ export const router = createBrowserRouter([
         ),
       },
 
+      {
+        path: '/orders',
+        element: (
+          <ProtectedRoute allowedRoles={['CLIENT']}>
+            <OrdersPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: '/profile',
         element: (

@@ -12,6 +12,8 @@ from app.checkout.router import router as checkout_router
 from app.core.config import CORS_ORIGINS
 from app.direcciones.router import router as direcciones_router
 from app.ingredientes.router import router as ingredientes_router
+from app.pagos.router import router as pagos_router
+from app.pedidos.router import router as pedidos_router
 from app.productos.router import router as productos_router
 from app.usuarios.router import router as usuarios_router
 
@@ -32,6 +34,8 @@ app.include_router(admin_router, prefix="/api/v1")
 app.include_router(checkout_router, prefix="/api/v1")
 app.include_router(categorias_router, prefix="/api/v1")
 app.include_router(ingredientes_router, prefix="/api/v1")
+app.include_router(pagos_router, prefix="/api/v1")
+app.include_router(pedidos_router, prefix="/api/v1")
 app.include_router(productos_router, prefix="/api/v1")
 app.include_router(direcciones_router, prefix="/api/v1")
 app.include_router(usuarios_router, prefix="/api/v1")

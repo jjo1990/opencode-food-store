@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-05-21
+> **Última actualización**: 2026-05-27 (2ª sesión)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -1055,6 +1055,34 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-069, US-070
 - **Estado**: ✅ Hecho (archivado 2026-05-21)
 - **Evidencia**: `openspec/changes/archive/2026-05-21-implement-checkout-validation/`
+
+### Change 28: `implement-order-creation-atomically` ⭐
+
+- **Funcionalidad**: Endpoint `POST /api/v1/pedidos` — creación atómica de pedidos con validación de stock (SELECT FOR UPDATE), snapshots de precio/nombre/dirección, cálculo de totales, registro de historial inicial. Nuevas tablas: `estado_pedido` (6 estados catálogo), `forma_pago` (3 métodos), `pedido`, `detalle_pedido`, `historial_estado_pedido`. Migración Alembic + seed data. Transacción con commit/rollback explícito.
+- **Historias**: US-035, US-036, US-037, US-038
+- **Estado**: ✅ Hecho (archivado 2026-05-27)
+- **Evidencia**: `openspec/changes/archive/2026-05-27-implement-order-creation-atomically/`
+
+### Change 29: `implement-order-detail-endpoints`
+
+- **Funcionalidad**: Endpoints `GET /api/v1/pedidos` (listado paginado, filtro por estado, role-aware: CLIENT ve propios, ADMIN/PEDIDOS ven todos) y `GET /api/v1/pedidos/{id}` (detalle completo con items snapshot e historial cronológico). Soft-delete filter, ownership check en detalle, schemas PedidoListRead, HistorialRead, PedidoDetail.
+- **Historias**: US-049, US-050, US-051, US-052
+- **Estado**: ✅ Hecho (archivado 2026-05-27)
+- **Evidencia**: `openspec/changes/archive/2026-05-27-implement-order-detail-endpoints/`
+
+### Change 30: `implement-order-frontend-ui`
+
+- **Funcionalidad**: Interfaz visual de pedidos — `shared/api/pedidosApi.ts`, entity `entities/order/` con hooks TanStack Query, `OrderList` (tabla responsive con badges de estado), `OrderDetailModal` (info + items snapshot + timeline visual), `OrderConfirmation` (post-creación). Página `/orders` para CLIENT con paginación y estados loading/error/empty. Timeline vertical con círculos de colores, conectores y estados futuros atenuados. Build y TypeScript exitosos.
+- **Historias**: US-071, US-049, US-050, US-035
+- **Estado**: ✅ Hecho (archivado 2026-05-27)
+- **Evidencia**: `openspec/changes/archive/2026-05-27-implement-order-frontend-ui/`
+
+### Change 31: `implement-payment-creation` ⭐
+
+- **Funcionalidad**: Endpoint `POST /api/v1/pagos/crear` — integración MercadoPago Checkout API. Modelo `Pago` con mp_payment_id, mp_status, external_reference, idempotency_key (unique). Validación de pedido (existencia, estado PENDIENTE, ownership). Idempotencia por UUID. Manejo de respuestas MP: approved/rejected/pending con registro en BD. SDK mercadopago instalado y configurado via MP_ACCESS_TOKEN.
+- **Historias**: US-045
+- **Estado**: ✅ Hecho (archivado 2026-05-27)
+- **Evidencia**: `openspec/changes/archive/2026-05-27-implement-payment-creation/`
 
 ---
 

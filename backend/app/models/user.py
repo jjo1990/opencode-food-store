@@ -32,6 +32,7 @@ class User(Base):
         "RefreshToken", back_populates="user", cascade="all, delete-orphan"
     )
     direcciones = relationship("DireccionEntrega", back_populates="usuario", lazy="dynamic")
+    pedidos = relationship("Pedido", back_populates="usuario", lazy="dynamic")
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
