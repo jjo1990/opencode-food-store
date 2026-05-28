@@ -8,16 +8,39 @@ from sqlalchemy.orm import Session
 from app.direcciones.repository import DireccionRepository
 from app.models import User
 from app.models.forma_pago import FormaPago
+from app.models.historial_estado_pedido import HistorialEstadoPedido
 from app.models.producto import Producto
 from app.pedidos.repository import PedidoRepository
 from app.pedidos.schemas import (
     CrearPedidoRequest,
     DetallePedidoRead,
     HistorialRead,
+    HistorialResponse,
     PedidoDetail,
     PedidoRead,
 )
 from app.productos.repository import ProductoRepository
+
+TRANSITIONS = {
+    "PENDIENTE": {
+        "CANCELADO": {"roles": ["CLIENT", "ADMIN", "PEDIDOS"], "stock_action": None},
+    },
+    "CONFIRMADO": {
+        "EN_PREPARACION": {"roles": ["ADMIN", "PEDIDOS"], "stock_action": None},
+        "CANCELADO": {"roles": ["CLIENT", "ADMIN", "PEDIDOS"], "stock_action": "restore"},
+    },
+    "EN_PREPARACION": {
+        "EN_CAMINO": {"roles": ["ADMIN", "PEDIDOS"], "stock_action": None},
+        "CANCELADO": {"roles": ["ADMIN"], "stock_action": "restore"},
+    },
+    "EN_CAMINO": {
+        "ENTREGADO": {"roles": ["ADMIN", "PEDIDOS"], "stock_action": None},
+    },
+    "ENTREGADO": {},
+    "CANCELADO": {},
+}
+
+TERMINAL_STATES = {"ENTREGADO", "CANCELADO"}
 
 
 class PedidoService:
@@ -247,3 +270,128 @@ class PedidoService:
                 for h in sorted((pedido.historial or []), key=lambda x: x.created_at)
             ],
         )
+
+    def avanzar_estado(
+        self, current_user: User, pedido_id: UUID, nuevo_estado: str, motivo: str | None = None
+    ) -> PedidoRead:
+        pedido = self.repo.get_by_id(pedido_id)
+        if not pedido:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
+            )
+
+        estado_actual = pedido.estado_codigo
+
+        if estado_actual in TERMINAL_STATES:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"El pedido está en un estado terminal ({estado_actual}). No se puede cambiar.",
+            )
+
+        estado_transitions = TRANSITIONS.get(estado_actual, {})
+        if nuevo_estado not in estado_transitions:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Transición inválida: {estado_actual} → {nuevo_estado}",
+            )
+
+        transition_info = estado_transitions[nuevo_estado]
+        user_roles = [r.role for r in current_user.roles]
+        is_admin = "ADMIN" in user_roles
+
+        if not is_admin and pedido.usuario_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
+            )
+
+        allowed_roles = transition_info["roles"]
+        if not any(r in allowed_roles for r in user_roles):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos para realizar esta transición",
+            )
+
+        try:
+            estado_anterior = estado_actual
+            pedido.estado_codigo = nuevo_estado
+
+            if transition_info.get("stock_action") == "restore":
+                for detalle in pedido.detalles or []:
+                    producto = (
+                        self.db.query(Producto)
+                        .filter(
+                            Producto.id == detalle.producto_id, Producto.soft_deleted_at.is_(None)
+                        )
+                        .with_for_update()
+                        .first()
+                    )
+                    if producto:
+                        producto.stock_cantidad += detalle.cantidad
+
+            self.repo.create_historial(
+                pedido_id=pedido.id,
+                estado_desde=estado_anterior,
+                estado_nuevo=nuevo_estado,
+                actor_id=current_user.id,
+                motivo=motivo,
+            )
+
+            self.repo.commit()
+            self.repo.refresh(pedido)
+
+            return PedidoRead(
+                id=pedido.id,
+                estado_codigo=pedido.estado_codigo,
+                subtotal=pedido.subtotal,
+                costo_envio=pedido.costo_envio,
+                total=pedido.total,
+                created_at=pedido.created_at,
+            )
+        except HTTPException:
+            self.repo.rollback()
+            raise
+        except Exception:
+            self.repo.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al avanzar estado del pedido",
+            )
+
+    def obtener_historial(self, current_user: User, pedido_id: UUID) -> list[HistorialResponse]:
+        from app.models.user import User as UserModel
+
+        pedido = self.repo.get_by_id(pedido_id)
+        if not pedido:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
+            )
+
+        user_roles = [r.role for r in current_user.roles]
+        is_admin_or_pedidos = any(r in ("ADMIN", "PEDIDOS") for r in user_roles)
+        if not is_admin_or_pedidos and pedido.usuario_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
+            )
+
+        results = (
+            self.db.query(HistorialEstadoPedido, UserModel.full_name)
+            .outerjoin(UserModel, HistorialEstadoPedido.actor_id == UserModel.id)
+            .filter(HistorialEstadoPedido.pedido_id == pedido_id)
+            .order_by(HistorialEstadoPedido.created_at.asc())
+            .all()
+        )
+
+        historial = []
+        for entry, actor_name in results:
+            historial.append(
+                HistorialResponse(
+                    estado_desde=entry.estado_desde,
+                    estado_nuevo=entry.estado_nuevo,
+                    actor_id=entry.actor_id,
+                    actor_nombre=actor_name if actor_name else "SISTEMA",
+                    motivo=entry.motivo,
+                    created_at=entry.created_at,
+                )
+            )
+
+        return historial

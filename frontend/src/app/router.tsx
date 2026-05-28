@@ -21,6 +21,7 @@ const StockCategoriesPage = lazy(() => import('../pages/stock/StockCategoriesPag
 const StockManagePage = lazy(() => import('../pages/stock/StockManagePage'));
 
 const OrdersPage = lazy(() => import('../pages/OrdersPage'));
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage'));
 const PedidosPanelPage = lazy(() => import('../pages/pedidos/PedidosPanelPage'));
 const PedidosReportsPage = lazy(() => import('../pages/pedidos/PedidosReportsPage'));
 
@@ -135,6 +136,14 @@ export const router = createBrowserRouter([
         ),
       },
 
+      {
+        path: '/checkout',
+        element: (
+          <ProtectedRoute allowedRoles={['CLIENT']}>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: '/orders',
         element: (

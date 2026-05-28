@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_role
 from app.models import User
-from app.pedidos.schemas import CrearPedidoRequest, PedidoDetail, PedidoRead
+from app.pedidos.schemas import (
+    AvanzarEstadoRequest,
+    CrearPedidoRequest,
+    HistorialResponse,
+    PedidoDetail,
+    PedidoRead,
+)
 from app.pedidos.service import PedidoService
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
@@ -42,3 +48,24 @@ def obtener_pedido(
     db: Session = Depends(get_db),
 ) -> PedidoDetail:
     return PedidoService(db).obtener_pedido(current_user, pedido_id)
+
+
+@router.patch("/{pedido_id}/avanzar", response_model=PedidoRead)
+def avanzar_estado(
+    pedido_id: UUID,
+    data: AvanzarEstadoRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> PedidoRead:
+    service = PedidoService(db)
+    return service.avanzar_estado(current_user, pedido_id, data.nuevo_estado, data.motivo)
+
+
+@router.get("/{pedido_id}/historial", response_model=list[HistorialResponse])
+def obtener_historial(
+    pedido_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[HistorialResponse]:
+    service = PedidoService(db)
+    return service.obtener_historial(current_user, pedido_id)

@@ -23,6 +23,7 @@ RATE_LIMIT_LOGIN_MINUTES = 15
 
 # MercadoPago Configuration
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
+MP_WEBHOOK_SECRET = os.getenv("MP_WEBHOOK_SECRET", "")
 
 # Derived values
 ACCESS_TOKEN_EXPIRE_TIMEDELTA = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

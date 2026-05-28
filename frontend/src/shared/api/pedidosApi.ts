@@ -52,3 +52,25 @@ export async function getPedido(id: string): Promise<PedidoDetailResponse> {
   const { data } = await client.get(`/pedidos/${id}`);
   return data;
 }
+
+export interface CrearPedidoRequest {
+  items: {
+    producto_id: string;
+    cantidad: number;
+    personalizacion: string[];
+  }[];
+  direccion_id: string;
+  forma_pago_codigo: string;
+}
+
+export interface CrearPedidoResponse {
+  id: string;
+  estado_codigo: string;
+  total: string;
+  created_at: string;
+}
+
+export async function postCrearPedido(data: CrearPedidoRequest): Promise<CrearPedidoResponse> {
+  const response = await client.post('/pedidos', data);
+  return response.data;
+}

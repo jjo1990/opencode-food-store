@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-05-27 (2ª sesión)
+> **Última actualización**: 2026-05-28
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -455,103 +455,13 @@ _El circuito cerrado: dinero entra, estado avanza, stock se decrementa._
 
 ---
 
-### Change 32: `implement-payment-webhook` ⭐ **CRÍTICO**
+<!-- Change 32 archived 2026-05-28 -->
 
-- **Funcionalidad**: Procesamiento de notificaciones IPN de MercadoPago:
-  - Endpoint `POST /api/v1/pagos/webhook`:
-    - Recibe: JSON de MercadoPago con topic=payment, event_id, data (payment_id)
-    - Validación: verifica firma de webhook (X-Signature header contra SECRET_KEY)
-    - Query: consulta API MP directamente para confirmar status real (nunca confiar solo en webhook)
-    - Si status == "approved":
-      - Buscar Pago via mp_payment_id
-      - Dentro de UoW: avanzar Pedido de PENDIENTE → CONFIRMADO
-      - Dentro de UoW: DECREMENTAR stock de cada producto (SELECT FOR UPDATE por item)
-      - Dentro de UoW: crear HistorialEstadoPedido con estado_desde=PENDIENTE, estado_nuevo=CONFIRMADO, actor=SISTEMA
-      - COMMIT atómico
-    - Si status == "rejected" o "pending": solo actualizar estado en tabla Pago, pedido permanece PENDIENTE
-    - Idempotencia: si idempotency_key ya procesado, ignora (detecta reintentos)
-    - Retorna: HTTP 200 rápidamente (no hace esperar a MP)
+<!-- Change 33 archived 2026-05-28 -->
 
-- **Historias**: US-046
-- **Dependencias**: `implement-payment-creation`, `implement-base-patterns`
-- **Orden**: 32
-- **Duración**: ~5 horas
+<!-- Change 34 archived 2026-05-28 -->
 
-**Por qué**: BLOQUEANTE. Cierra el ciclo pago-confirmación. Necesita UoW.
-
----
-
-### Change 33: `implement-payment-query-and-retry`
-
-- **Funcionalidad**: Consulta y reintento de pagos:
-  - **GET /api/v1/pagos/:pedido_id**: obtiene estado actual del pago, si existen múltiples intentos retorna array histórico
-  - **POST /api/v1/pagos/reintentar**: si pago anterior fue rechazado, cliente puede crear nuevo intento
-    - Recibe: pedido_id, nuevo card_token
-    - Genera: nuevo idempotency_key
-    - Llama a Payment.create() nuevamente (MP tratará como transacción independiente)
-    - INSERT nuevo registro en tabla Pago (relación 1:N Pedido→Pago)
-    - Retorna: nuevo mp_payment_id y status
-
-- **Historias**: US-047, US-048
-- **Dependencias**: `implement-payment-webhook`
-- **Orden**: 33
-- **Duración**: ~3 horas
-
-**Por qué**: Mejora sobre pagos.
-
----
-
-### Change 34: `implement-order-fsm-transitions` ⭐ **CRÍTICO**
-
-- **Funcionalidad**: Máquina de estados del pedido (FSM):
-  - Service layer: clase `PedidoService` con método `avanzar_estado(pedido_id, nuevo_estado, motivo?, actor)`
-  - Validación de transiciones contra mapa hardcodeado:
-    - PENDIENTE → [CONFIRMADO, CANCELADO]
-    - CONFIRMADO → [EN_PREPARACIÓN, CANCELADO]
-    - EN_PREPARACIÓN → [EN_CAMINO, CANCELADO] (solo ADMIN)
-    - EN_CAMINO → [ENTREGADO]
-    - ENTREGADO: terminal
-    - CANCELADO: terminal
-  - Regla especial: PENDIENTE → CONFIRMADO es EXCLUSIVA del webhook (no manual, RN-02)
-  - Stock:
-    - CONFIRMADO: ya fue decrementado por webhook (RN-FS03)
-    - CANCELADO desde CONFIRMADO: restaurar stock atómicamente (SELECT FOR UPDATE, increment)
-    - CANCELADO desde EN_PREP: solo ADMIN, restaura stock
-  - Historial: INSERT en HistorialEstadoPedido con estado_anterior, estado_nuevo, timestamp, actor, motivo
-  - Endpoint `PATCH /api/v1/pedidos/:id/avanzar`:
-    - Recibe: { nuevo_estado, motivo? }
-    - Llama service.avanzar_estado(pedido_id, nuevo_estado, motivo, usuario_actual)
-    - Validar rol requerido según transición
-    - Retorna: PedidoRead actualizado
-  - Endpoint `DELETE /api/v1/pedidos/:id` o `PATCH /pedidos/:id/cancelar`:
-    - Cliente solo puede cancelar PENDIENTE/CONFIRMADO
-    - Admin puede cancelar PENDIENTE/CONFIRMADO/EN_PREP
-    - Gesttor PEDIDOS puede cancelar PENDIENTE/CONFIRMADO
-
-- **Historias**: US-039, US-040, US-041, US-042, US-043, US-044
-- **Dependencias**: `implement-order-detail-endpoints`
-- **Orden**: 34
-- **Duración**: ~7 horas
-
-**Por qué**: CENTRAL. Coordina pagos, stock, historial. BLOQUEANTE para admin.
-
----
-
-### Change 35: `implement-order-history-audittrail`
-
-- **Funcionalidad**: API del historial de estados:
-  - Endpoint `GET /api/v1/pedidos/:id/historial`:
-    - Retorna lista ordenada cronológicamente (ORDER BY created_at ASC) de HistorialEstadoPedido
-    - Cada registro: {estado_anterior, estado_nuevo, timestamp, actor (usuario.nombre o "SISTEMA"), motivo}
-    - Verificar ownership o rol ADMIN
-  - El historial es append-only: nunca UPDATE/DELETE
-
-- **Historias**: US-044
-- **Dependencias**: `implement-order-fsm-transitions`
-- **Orden**: 35
-- **Duración**: ~2 horas
-
-**Por qué**: Depende de FSM y está documentado en archivos de auditoría.
+<!-- Change 35 archived 2026-05-28 -->
 
 ---
 
@@ -580,28 +490,23 @@ _El circuito cerrado: dinero entra, estado avanza, stock se decrementa._
 
 ---
 
+### Change 37: `implement-admin-users-management`
+
+- **Funcionalidad**: Gestión de usuarios en admin — 5 endpoints REST para listado con paginación y filtros (rol, búsqueda ILIKE, estado activo/inactivo), detalle de usuario, actualización de datos y roles con protección del último ADMIN, soft delete con reactivación, invalidación de refresh tokens al cambiar roles
+- **Historias**: US-053, US-054, US-055
+- **Dependencias**: `implement-rbac-system`
+- **Estado**: ✅ Hecho (archivado 2026-05-28)
+- **Evidencia**: `openspec/changes/archive/2026-05-28-implement-admin-users-management/`
+
+---
+
 ---
 
 ## 🛠️ PHASE 7 — PANEL ADMINISTRATIVO Y MÉTRICAS (Sprint 7-8)
 
 _Control total del negocio desde un solo lugar._
 
-### Change 37: `implement-admin-users-management`
-
-- **Funcionalidad**: Gestión de usuarios en admin:
-  - **GET /api/v1/admin/usuarios**: listado paginado (page, size), filtrable por rol/email/estado
-  - **PUT /api/v1/admin/usuarios/:id**: modifica nombre, email, teléfono, asigna/quita roles (M:M), activar/desactivar
-  - **DELETE /api/v1/admin/usuarios/:id**: soft delete (marca eliminado_en)
-  - Validación: solo ADMIN puede hacer esto
-  - Seguridad: ADMIN no puede quitarse el rol ADMIN si es el último admin
-  - Invalidación: post-cambio de rol, tokens del usuario se invalidan (fuerza re-login)
-
-- **Historias**: US-053, US-054, US-055
-- **Dependencias**: `implement-rbac-system`
-- **Orden**: 37
-- **Duración**: ~4 horas
-
-**Por qué**: Necesita RBAC funcional.
+<!-- Change 37 archived 2026-05-28 -->
 
 ---
 
@@ -1083,6 +988,34 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-045
 - **Estado**: ✅ Hecho (archivado 2026-05-27)
 - **Evidencia**: `openspec/changes/archive/2026-05-27-implement-payment-creation/`
+
+### Change 32: `implement-payment-webhook` ⭐ **CRÍTICO**
+
+- **Funcionalidad**: Webhook IPN de MercadoPago — `POST /api/v1/pagos/webhook` público. Validación de firma X-Signature contra MP_WEBHOOK_SECRET. Consulta de verificación a API de MP (nunca confía solo en el body). Transacción atómica al aprobar: actualiza Pago, avanza Pedido a CONFIRMADO, decrementa stock con SELECT FOR UPDATE, crea HistorialEstadoPedido con actor=SISTEMA, rollback en error. Idempotencia por mp_payment_id.
+- **Historias**: US-046
+- **Estado**: ✅ Hecho (archivado 2026-05-28)
+- **Evidencia**: `openspec/changes/archive/2026-05-28-implement-payment-webhook/`
+
+### Change 33: `implement-payment-query-and-retry`
+
+- **Funcionalidad**: Consulta y reintento de pagos. `GET /api/v1/pagos/{pedido_id}` retorna historial completo de intentos (array ordenado por fecha descendente) con ownership check. `POST /api/v1/pagos/reintentar` permite crear nuevo intento si el último pago fue rechazado, genera nueva idempotency_key, llama a MP SDK y registra nuevo Pago (relación 1:N Pedido→Pago).
+- **Historias**: US-047, US-048
+- **Estado**: ✅ Hecho (archivado 2026-05-28)
+- **Evidencia**: `openspec/changes/archive/2026-05-28-implement-payment-query-and-retry/`
+
+### Change 34: `implement-order-fsm-transitions` ⭐ **CRÍTICO**
+
+- **Funcionalidad**: Máquina de estados de pedidos (FSM) con `PATCH /api/v1/pedidos/{id}/avanzar`. Mapa hardcodeado de transiciones válidas: PENDIENTE→CANCELADO, CONFIRMADO→EN_PREPARACIÓN/CANCELADO, EN_PREPARACIÓN→EN_CAMINO/CANCELADO, EN_CAMINO→ENTREGADO. Control de roles por transición (CLIENT, ADMIN, PEDIDOS). Regla especial: PENDIENTE→CONFIRMADO es exclusiva del webhook (bloqueada en endpoint). Restauración de stock atómica con SELECT FOR UPDATE al cancelar desde CONFIRMADO o EN_PREPARACIÓN. Registro de HistorialEstadoPedido en cada transición con actor y motivo.
+- **Historias**: US-039, US-040, US-041, US-042, US-043, US-044
+- **Estado**: ✅ Hecho (archivado 2026-05-28)
+- **Evidencia**: `openspec/changes/archive/2026-05-28-implement-order-fsm-transitions/`
+
+### Change 35: `implement-order-history-audittrail`
+
+- **Funcionalidad**: Endpoint `GET /api/v1/pedidos/{id}/historial` que retorna historial de cambios de estado ordenado cronológicamente (ASC). Cada entrada incluye actor_nombre resuelto vía LEFT JOIN a User (o "SISTEMA" si actor_id=NULL). Ownership check: CLIENT ve propio, ADMIN/PEDIDOS ven todos. Append-only.
+- **Historias**: US-044
+- **Estado**: ✅ Hecho (archivado 2026-05-28)
+- **Evidencia**: `openspec/changes/archive/2026-05-28-implement-order-history-audittrail/`
 
 ---
 
