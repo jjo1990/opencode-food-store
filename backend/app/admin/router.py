@@ -2,18 +2,26 @@
 Admin routes for role-based access control and user management
 """
 
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.admin.schemas import AdminUserListResponse, AdminUserResponse, AdminUserUpdateRequest
+from app.admin.schemas import (
+    AdminChangeStateRequest,
+    AdminOrderListResponse,
+    AdminUserListResponse,
+    AdminUserResponse,
+    AdminUserUpdateRequest,
+)
 from app.admin.service import AdminService
 from app.auth.schemas import UpdateRolesRequest, UserResponse
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.core.exceptions import ForbiddenException, UserNotFoundException
 from app.models import User
+from app.pedidos.schemas import PedidoDetail, PedidoRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -154,3 +162,140 @@ async def reactivate_usuario(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no encontrado",
         )
+
+
+# ─── Order Management Endpoints ────────────────────────────────────────────
+
+"""
+Admin Order Management Endpoints
+
+These endpoints provide comprehensive order management for admins:
+
+1. GET /admin/pedidos — List orders with pagination and filtering
+   - Filters: estado_codigo, fecha_inicio, fecha_fin, usuario_id, monto_min, monto_max
+   - Pagination: page, size (default 20, max 100)
+   - Required roles: ADMIN or PEDIDOS
+   - Joined with User and DireccionEntrega for client names and addresses
+
+2. PATCH /admin/pedidos/{id}/estado — Change order state
+   - Validates FSM transitions from pedidos.service.TRANSITIONS
+   - Prevents transitions from terminal states (ENTREGADO, CANCELADO)
+   - Restores stock when transition has stock_action: "restore"
+   - Creates HistorialEstadoPedido audit entry with motivo
+   - Required roles: ADMIN or PEDIDOS
+
+3. GET /admin/pedidos/{id} — Get order details
+   - Returns PedidoDetail with items, historial, and joined actor names
+   - Requires ADMIN or PEDIDOS role
+"""
+
+
+@router.get("/pedidos", response_model=AdminOrderListResponse)
+async def list_pedidos_admin(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    estado_codigo: str | None = Query(None, description="Filtrar por estado del pedido"),
+    fecha_inicio: datetime | None = Query(None, description="Filtrar desde fecha"),
+    fecha_fin: datetime | None = Query(None, description="Filtrar hasta fecha"),
+    usuario_id: UUID | None = Query(None, description="Filtrar por usuario"),
+    monto_min: float | None = Query(None, description="Monto mínimo del pedido"),
+    monto_max: float | None = Query(None, description="Monto máximo del pedido"),
+    current_user: User = Depends(require_role("ADMIN", "PEDIDOS")),
+    db: Session = Depends(get_db),
+) -> AdminOrderListResponse:
+    """
+    Listar pedidos para admin con paginación y filtros.
+
+    Retorna una lista paginada de pedidos con datos del cliente y dirección.
+    Los filtros se aplican con lógica AND.
+
+    Query Parameters:
+    - page: Número de página (default: 1)
+    - size: Items por página (default: 20, max: 100)
+    - estado_codigo: Filtrar por estado (ej: PENDIENTE, CONFIRMADO, ENTREGADO)
+    - fecha_inicio: Filtrar desde fecha ISO (ej: 2026-06-01)
+    - fecha_fin: Filtrar hasta fecha ISO
+    - usuario_id: UUID del usuario cliente
+    - monto_min: Monto mínimo del pedido
+    - monto_max: Monto máximo del pedido
+
+    Returns: AdminOrderListResponse con items, total, page, size, pages
+    """
+    service = AdminService(db)
+    return service.list_orders_admin(
+        page=page,
+        size=size,
+        estado_codigo=estado_codigo,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        usuario_id=usuario_id,
+        monto_min=monto_min,
+        monto_max=monto_max,
+    )
+
+
+@router.patch("/pedidos/{pedido_id}/estado", response_model=PedidoRead)
+async def change_pedido_state(
+    pedido_id: UUID,
+    request: AdminChangeStateRequest,
+    current_user: User = Depends(require_role("ADMIN", "PEDIDOS")),
+    db: Session = Depends(get_db),
+) -> PedidoRead:
+    """
+    Cambiar estado de un pedido (admin panel).
+
+    Valida la transición de estado usando la FSM definida en pedidos.service:
+    - TRANSITIONS: mapa de transiciones válidas con roles requeridos
+    - TERMINAL_STATES: estados desde los que no se puede transicionar
+
+    Si la transición tiene stock_action="restore", incrementa el stock de los productos.
+
+    Crea una entrada de auditoría en HistorialEstadoPedido con:
+    - estado_desde: estado anterior
+    - estado_nuevo: nuevo estado
+    - actor_id: ID del admin que realizó el cambio
+    - motivo: razón del cambio (opcional, max 500 caracteres)
+
+    Request Body:
+    - nuevo_estado: Nuevo estado (1-20 caracteres, debe ser válido en la transición)
+    - motivo: Razón del cambio (opcional, max 500 caracteres)
+
+    Returns: PedidoRead con el pedido actualizado
+
+    Errors:
+    - 404: Pedido no encontrado
+    - 403: Usuario sin permisos para esta transición
+    - 422: Transición inválida o pedido en estado terminal
+    """
+    service = AdminService(db)
+    return service.change_order_state_admin(pedido_id, request, current_user)
+
+
+@router.get("/pedidos/{pedido_id}", response_model=PedidoDetail)
+async def get_pedido_detail(
+    pedido_id: UUID,
+    current_user: User = Depends(require_role("ADMIN", "PEDIDOS")),
+    db: Session = Depends(get_db),
+) -> PedidoDetail:
+    """
+    Obtener detalle completo de un pedido (admin panel).
+
+    Retorna PedidoDetail con:
+    - Datos del pedido (id, estado, monto, fechas)
+    - items: Lista de DetallePedido con productos, cantidades, precios
+    - historial: Audit trail con todas las transiciones de estado
+      (incluye actor_nombre joinado desde User)
+
+    Path Parameter:
+    - pedido_id: UUID del pedido
+
+    Returns: PedidoDetail
+
+    Errors:
+    - 404: Pedido no encontrado (o usuario sin permisos de lectura)
+    - 403: Usuario sin rol ADMIN o PEDIDOS
+    """
+    from app.pedidos.service import PedidoService
+
+    service = PedidoService(db)
+    return service.obtener_pedido(current_user, pedido_id)

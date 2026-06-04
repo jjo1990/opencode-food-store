@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-05-28
+> **Última actualización**: 2026-06-04 (Change 38 archived — Admin Order Management endpoints complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -465,28 +465,7 @@ _El circuito cerrado: dinero entra, estado avanza, stock se decrementa._
 
 ---
 
-### Change 36: `implement-payment-frontend-ui`
-
-- **Funcionalidad**: Interfaz de pagos:
-  - Página `CheckoutPage`:
-    - Resumen de carrito (items, subtotal, envío, total)
-    - Selector de dirección (con opción agregar nueva)
-    - Selector de forma de pago (solo MERCADOPAGO v1)
-    - Integración: componente `CardPaymentForm` de SDK MercadoPago
-    - Botón "Pagar": valida dirección + forma de pago, tokeniza con SDK, POST /pagos/crear
-  - Post-pago:
-    - **Success**: página con "¡Pago confirmado!", ID de pedido, botón "Rastrear Pedido"
-    - **Failure**: página con error, botón "Reintentar" (POST /pagos/reintentar) o "Volver al carrito"
-    - **Pending**: mensaje "Tu pago está siendo procesado, espera confirmación por email"
-  - Polling: cada 5-10 segundos, GET /pagos/pedido_id para verificar cambio de estado (mientras está PENDIENTE)
-  - Cancelación: usuario puede cancelar pago pendiente (DELETE /pedidos/:id)
-
-- **Historias**: US-045, US-072
-- **Dependencias**: `implement-payment-creation`, `implement-order-frontend-ui`, `implement-payment-webhook`
-- **Orden**: 36
-- **Duración**: ~6 horas
-
-**Por qué**: Necesita pagos backend completo + UI pedidos.
+<!-- Change 36 archived 2026-06-04 -->
 
 ---
 
@@ -1016,6 +995,30 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-044
 - **Estado**: ✅ Hecho (archivado 2026-05-28)
 - **Evidencia**: `openspec/changes/archive/2026-05-28-implement-order-history-audittrail/`
+
+### Change 36: `implement-payment-frontend-ui`
+
+- **Funcionalidad**: Interfaz de pagos completa — Página `/checkout` protegida (CLIENT) con máquina de estados (review → processing → success/failure/pending). Resumen de carrito con items, subtotal, envío gratis y total. Selector de dirección de entrega con radio buttons. Integración `@mercadopago/sdk-react` CardPayment para tokenización PCI SAQ-A. POST a `/api/v1/pagos/crear` al submit con card_token. Pantallas post-pago: Success (check verde + botón "Rastrear pedido"), Failure (mensaje de error + botón Reintentar con `POST /api/v1/pagos/reintentar`), Pending (polling cada 5s con TanStack Query hasta que cambia el estado). Polling detenido automáticamente al salir de pending. Render-time setState fixeado a useEffect.
+- **Historias**: US-045, US-072
+- **Estado**: ✅ Hecho (archivado 2026-06-04)
+- **Evidencia**: `openspec/changes/archive/2026-06-04-implement-payment-frontend-ui/`
+
+### Change 38: `implement-admin-order-management`
+
+- **Funcionalidad**: Gestión de pedidos en admin panel — 3 endpoints REST:
+  1. `GET /api/v1/admin/pedidos` — listado de TODOS los pedidos con filtros avanzados (estado, fecha inicio/fin, usuario_id, rango de monto), paginación (page, size), JOINs a User para nombres de clientes
+  2. `PATCH /api/v1/admin/pedidos/{id}/estado` — transición de estado con FSM validation, motivo registrado, stock restoration automática en CANCELADO
+  3. `GET /api/v1/admin/pedidos/{id}` — detalle completo con items snapshot e historial de cambios (audit trail con actor_id resuelto a nombres)
+  - RBAC: `require_role(["ADMIN", "PEDIDOS"])` en todos los endpoints
+  - FSM reusado desde `pedidos.service` (TRANSITIONS dict, TERMINAL_STATES set)
+  - Stock operations con `SELECT ... FOR UPDATE` para transaction safety
+  - Audit trail en `HistorialEstadoPedido` para cada transición
+  - 3 nuevas schemas Pydantic: `AdminOrderListItem`, `AdminOrderListResponse`, `AdminChangeStateRequest`
+  - 31 tests: 9 repository + 9 service + 12 integration
+- **Historias**: US-065, US-051, US-052
+- **Dependencias**: `implement-order-fsm-transitions`, `implement-admin-users-management`
+- **Estado**: ✅ Hecho (archivado 2026-06-04)
+- **Evidencia**: `openspec/changes/archive/2026-06-04-implement-admin-order-management/`
 
 ---
 

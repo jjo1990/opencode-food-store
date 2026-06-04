@@ -2,12 +2,20 @@
 Admin service layer
 """
 
+from datetime import datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.admin.repository import AdminUserRepository
-from app.admin.schemas import AdminUserListResponse, AdminUserResponse, AdminUserUpdateRequest
+from app.admin.repository import AdminOrderRepository, AdminUserRepository
+from app.admin.schemas import (
+    AdminChangeStateRequest,
+    AdminOrderListResponse,
+    AdminUserListResponse,
+    AdminUserResponse,
+    AdminUserUpdateRequest,
+)
 from app.auth.repository import RefreshTokenRepository, UserRepository
 from app.auth.schemas import UserResponse
 from app.core.exceptions import (
@@ -16,6 +24,10 @@ from app.core.exceptions import (
     UserNotFoundException,
 )
 from app.models import User
+from app.models.producto import Producto
+from app.pedidos.repository import PedidoRepository
+from app.pedidos.schemas import PedidoRead
+from app.pedidos.service import TERMINAL_STATES, TRANSITIONS
 
 
 class AdminService:
@@ -217,3 +229,146 @@ class AdminService:
             created_at=user.created_at,
             soft_deleted_at=user.soft_deleted_at,
         )
+
+    # ─── Order Management Methods ─────────────────────────────────────────
+
+    def list_orders_admin(
+        self,
+        page: int = 1,
+        size: int = 20,
+        estado_codigo: str | None = None,
+        fecha_inicio: datetime | None = None,
+        fecha_fin: datetime | None = None,
+        usuario_id: UUID | None = None,
+        monto_min: float | None = None,
+        monto_max: float | None = None,
+    ) -> AdminOrderListResponse:
+        """List orders for admin with pagination and filters"""
+        repo = AdminOrderRepository(self.db)
+        orders, total = repo.list_orders_admin(
+            page=page,
+            size=size,
+            estado_codigo=estado_codigo,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            usuario_id=usuario_id,
+            monto_min=monto_min,
+            monto_max=monto_max,
+        )
+
+        # Convert orders to AdminOrderListItem format
+        from app.admin.schemas import AdminOrderListItem
+
+        items = [
+            AdminOrderListItem(
+                id=order["id"],
+                cliente_nombre=order["cliente_nombre"],
+                usuario_id=order["usuario_id"],
+                estado_codigo=order["estado_codigo"],
+                total=float(order["total"]),
+                created_at=order["created_at"],
+                direccion_calle=order["direccion_calle"],
+            )
+            for order in orders
+        ]
+
+        pages = max(1, (total + size - 1) // size)
+        return AdminOrderListResponse(
+            items=items, total=total, page=page, size=size, pages=pages
+        )
+
+    def change_order_state_admin(
+        self,
+        order_id: UUID,
+        request: AdminChangeStateRequest,
+        current_user: User,
+    ) -> PedidoRead:
+        """
+        Change order state in admin panel.
+        Validates FSM transitions, creates audit entries, handles stock restoration.
+        """
+        repo = PedidoRepository(self.db)
+        pedido = repo.get_by_id(order_id)
+
+        if not pedido:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado"
+            )
+
+        # Check if order is in terminal state
+        if pedido.estado_codigo in TERMINAL_STATES:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"El pedido está en un estado terminal ({pedido.estado_codigo}). "
+                "No se puede cambiar.",
+            )
+
+        # Check if transition is valid
+        transitions_from_state = TRANSITIONS.get(pedido.estado_codigo, {})
+        if request.nuevo_estado not in transitions_from_state:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Transición inválida: {pedido.estado_codigo} → {request.nuevo_estado}",
+            )
+
+        # Check role authorization
+        transition_info = transitions_from_state[request.nuevo_estado]
+        allowed_roles = transition_info["roles"]
+        user_roles = [r.role for r in current_user.roles]
+
+        if not any(r in allowed_roles for r in user_roles):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos para realizar esta transición",
+            )
+
+        try:
+            # Update order state
+            estado_anterior = pedido.estado_codigo
+            pedido.estado_codigo = request.nuevo_estado
+
+            # Handle stock restoration if needed
+            if transition_info.get("stock_action") == "restore":
+                for detalle in pedido.detalles or []:
+                    producto = (
+                        self.db.query(Producto)
+                        .filter(
+                            Producto.id == detalle.producto_id,
+                            Producto.soft_deleted_at.is_(None),
+                        )
+                        .with_for_update()
+                        .first()
+                    )
+                    if producto:
+                        producto.stock_cantidad += detalle.cantidad
+
+            # Create audit entry
+            repo.create_historial(
+                pedido_id=pedido.id,
+                estado_desde=estado_anterior,
+                estado_nuevo=request.nuevo_estado,
+                actor_id=current_user.id,
+                motivo=request.motivo,
+            )
+
+            # Commit transaction
+            repo.commit()
+            repo.refresh(pedido)
+
+            return PedidoRead(
+                id=pedido.id,
+                estado_codigo=pedido.estado_codigo,
+                subtotal=pedido.subtotal,
+                costo_envio=pedido.costo_envio,
+                total=pedido.total,
+                created_at=pedido.created_at,
+            )
+        except HTTPException:
+            repo.rollback()
+            raise
+        except Exception as e:
+            repo.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al cambiar estado del pedido: {str(e)}",
+            )

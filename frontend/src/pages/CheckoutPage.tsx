@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore, getTotalPrice } from '../stores/cartStore';
 import { useAddresses } from '../entities/address/api';
-import { useCreatePayment, useRetryPayment, usePaymentStatus } from '../entities/payment/api';
+import { useRetryPayment, usePaymentStatus } from '../entities/payment/api';
+import { CheckoutForm } from '../features/checkout/components/CheckoutForm';
 import { Button } from '../shared/components/Button';
 import { Card } from '../shared/components/Card';
 import { Spinner } from '../shared/components/Spinner';
@@ -33,34 +34,13 @@ export function CheckoutPage() {
     isError: addressesError,
     refetch: refetchAddresses,
   } = useAddresses();
-  const createPayment = useCreatePayment();
   const retryPayment = useRetryPayment();
   const { data: paymentStatus } = usePaymentStatus(pedidoId, step === 'pending');
 
-  const handlePayment = useCallback(async () => {
-    if (!selectedAddressId) return;
-    setStep('processing');
-
-    try {
-      const { postCrearPedido } = await import('../shared/api/pedidosApi');
-      const pedido = await postCrearPedido({
-        items: items.map((i) => ({
-          producto_id: i.producto_id,
-          cantidad: i.cantidad,
-          personalizacion: i.personalizacion,
-        })),
-        direccion_id: selectedAddressId,
-        forma_pago_codigo: 'MERCADOPAGO',
-      });
-
-      setPedidoId(pedido.id);
-
-      const result = await createPayment.mutateAsync({
-        pedido_id: pedido.id,
-        card_token: 'dummy-token',
-      });
-
-      setPaymentResult({ status: result.status, detail: result.status_detail || undefined });
+  const handlePaymentComplete = useCallback(
+    (result: { pedidoId: string; status: string; statusDetail?: string }) => {
+      setPedidoId(result.pedidoId);
+      setPaymentResult({ status: result.status, detail: result.statusDetail });
 
       if (result.status === 'approved') {
         setStep('success');
@@ -70,11 +50,9 @@ export function CheckoutPage() {
       } else {
         setStep('failure');
       }
-    } catch (err) {
-      setPaymentResult({ status: 'error', detail: (err as Error).message });
-      setStep('failure');
-    }
-  }, [items, selectedAddressId, createPayment, clearCart]);
+    },
+    [clearCart],
+  );
 
   const handleRetry = useCallback(async () => {
     if (!pedidoId) return;
@@ -102,14 +80,16 @@ export function CheckoutPage() {
     }
   }, [pedidoId, retryPayment, clearCart]);
 
-  // Check payment status while pending
-  if (step === 'pending' && paymentStatus && paymentStatus.pagos.length > 0) {
-    const last = paymentStatus.pagos[0];
-    if (last.mp_status !== 'pending') {
-      setPaymentResult({ status: last.mp_status, detail: last.status_detail || undefined });
-      setStep(last.mp_status === 'approved' ? 'success' : 'failure');
+  // Check payment status while pending (triggered when polling returns new data)
+  useEffect(() => {
+    if (paymentStatus && paymentStatus.pagos.length > 0) {
+      const last = paymentStatus.pagos[0];
+      if (last.mp_status !== 'pending') {
+        setPaymentResult({ status: last.mp_status, detail: last.status_detail || undefined });
+        setStep(last.mp_status === 'approved' ? 'success' : 'failure');
+      }
     }
-  }
+  }, [paymentStatus]);
 
   if (items.length === 0 && step === 'review') {
     return (
@@ -289,23 +269,36 @@ export function CheckoutPage() {
             )}
           </Card>
 
-          <Card>
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Forma de pago</h2>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-12 items-center justify-center rounded bg-blue-500 text-xs font-bold text-white">
-                  MP
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">MercadoPago</p>
-                  <p className="text-sm text-gray-500">Tarjeta de crédito/débito</p>
+          {!selectedAddressId ? (
+            <Card>
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">Forma de pago</h2>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-12 items-center justify-center rounded bg-blue-500 text-xs font-bold text-white">
+                    MP
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">MercadoPago</p>
+                    <p className="text-sm text-gray-500">Tarjeta de crédito/débito</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <p className="mt-2 text-xs text-gray-400">
-              Tus datos de pago están protegidos por MercadoPago (PCI SAQ-A).
-            </p>
-          </Card>
+              <p className="mt-2 text-xs text-gray-400">
+                Seleccioná una dirección de entrega para continuar con el pago.
+              </p>
+            </Card>
+          ) : (
+            <CheckoutForm
+              amount={total}
+              items={items}
+              selectedAddressId={selectedAddressId}
+              onComplete={handlePaymentComplete}
+              onError={(err) => {
+                setPaymentResult({ status: 'error', detail: err.message });
+                setStep('failure');
+              }}
+            />
+          )}
         </div>
 
         <div>
@@ -340,25 +333,10 @@ export function CheckoutPage() {
 
             <hr className="my-3 border-gray-200" />
 
-            <div className="mb-6 flex justify-between">
+            <div className="flex justify-between">
               <span className="text-base font-medium text-gray-900">Total</span>
               <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
             </div>
-
-            <Button
-              className="w-full"
-              onClick={handlePayment}
-              disabled={!selectedAddressId || createPayment.isPending}
-              isLoading={createPayment.isPending}
-            >
-              Pagar {formatPrice(total)}
-            </Button>
-
-            {!selectedAddressId && (
-              <p className="mt-2 text-center text-xs text-amber-600">
-                Seleccioná una dirección de entrega para continuar
-              </p>
-            )}
           </Card>
         </div>
       </div>
