@@ -5,11 +5,14 @@ Repository layer for admin user management
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app.models import User, UserRole
+from app.models.categoria import Categoria
+from app.models.ingrediente import Ingrediente
 from app.models.pedido import Pedido
+from app.models.producto import Producto
+from app.models.producto_categoria import ProductoCategoria
 
 
 class AdminUserRepository:
@@ -136,10 +139,7 @@ class AdminOrderRepository:
 
         # Apply ordering and pagination
         results = (
-            query.order_by(Pedido.created_at.desc())
-            .offset((page - 1) * size)
-            .limit(size)
-            .all()
+            query.order_by(Pedido.created_at.desc()).offset((page - 1) * size).limit(size).all()
         )
 
         # Convert to dict for flexible response building
@@ -158,3 +158,91 @@ class AdminOrderRepository:
             )
 
         return orders, total
+
+
+class AdminProductoRepository:
+    """Repository for admin producto operations — no soft_delete filter"""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def list_all_admin(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        search: str | None = None,
+        disponible: bool | None = None,
+        eliminado: bool | None = None,
+        categoria_id: UUID | None = None,
+    ) -> tuple[list[Producto], int]:
+        """List ALL productos (including soft-deleted) with filters and pagination"""
+        query = self.db.query(Producto)
+
+        if eliminado is True:
+            query = query.filter(Producto.soft_deleted_at.isnot(None))
+        elif eliminado is False:
+            query = query.filter(Producto.soft_deleted_at.is_(None))
+
+        if disponible is not None:
+            query = query.filter(Producto.disponible == disponible)
+
+        if search:
+            query = query.filter(Producto.nombre.ilike(f"%{search}%"))
+
+        if categoria_id is not None:
+            query = query.join(ProductoCategoria).filter(
+                ProductoCategoria.categoria_id == categoria_id
+            )
+
+        total = query.count()
+        items = query.order_by(Producto.nombre).offset(skip).limit(limit).all()
+        return items, total
+
+
+class AdminCategoriaRepository:
+    """Repository for admin categoria operations — no soft_delete filter"""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def list_all_admin(self, eliminado: bool | None = None) -> tuple[list[Categoria], int]:
+        """List ALL categorias (including soft-deleted) with optional filter"""
+        query = self.db.query(Categoria)
+
+        if eliminado is True:
+            query = query.filter(Categoria.soft_deleted_at.isnot(None))
+        elif eliminado is False:
+            query = query.filter(Categoria.soft_deleted_at.is_(None))
+
+        total = query.count()
+        items = query.order_by(Categoria.nombre).all()
+        return items, total
+
+
+class AdminIngredienteRepository:
+    """Repository for admin ingrediente operations — no soft_delete filter"""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def list_all_admin(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        es_alergeno: bool | None = None,
+        eliminado: bool | None = None,
+    ) -> tuple[list[Ingrediente], int]:
+        """List ALL ingredientes (including soft-deleted) with filters and pagination"""
+        query = self.db.query(Ingrediente)
+
+        if eliminado is True:
+            query = query.filter(Ingrediente.soft_deleted_at.isnot(None))
+        elif eliminado is False:
+            query = query.filter(Ingrediente.soft_deleted_at.is_(None))
+
+        if es_alergeno is not None:
+            query = query.filter(Ingrediente.es_alergeno == es_alergeno)
+
+        total = query.count()
+        items = query.order_by(Ingrediente.nombre).offset(skip).limit(limit).all()
+        return items, total

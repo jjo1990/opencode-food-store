@@ -9,8 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.admin.schemas import (
+    AdminCategoriaListResponse,
     AdminChangeStateRequest,
+    AdminIngredienteListResponse,
     AdminOrderListResponse,
+    AdminProductoListResponse,
     AdminUserListResponse,
     AdminUserResponse,
     AdminUserUpdateRequest,
@@ -299,3 +302,56 @@ async def get_pedido_detail(
 
     service = PedidoService(db)
     return service.obtener_pedido(current_user, pedido_id)
+
+
+# ─── Catalog Management Endpoints ──────────────────────────────────────────
+
+
+@router.get("/productos", response_model=AdminProductoListResponse)
+async def list_productos_admin(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    search: str | None = Query(None, description="Buscar por nombre"),
+    disponible: bool | None = Query(None, description="Filtrar por disponibilidad"),
+    eliminado: bool | None = Query(None, description="Filtrar por estado de eliminación"),
+    categoria_id: UUID | None = Query(None, description="Filtrar por categoría"),
+    current_user: User = Depends(require_role("ADMIN", "STOCK")),
+    db: Session = Depends(get_db),
+) -> AdminProductoListResponse:
+    """Listar todos los productos (incluyendo soft-deleted) con filtros y paginación"""
+    service = AdminService(db)
+    return service.list_productos_admin(
+        page=page,
+        size=size,
+        search=search,
+        disponible=disponible,
+        eliminado=eliminado,
+        categoria_id=categoria_id,
+    )
+
+
+@router.get("/categorias", response_model=AdminCategoriaListResponse)
+async def list_categorias_admin(
+    eliminado: bool | None = Query(None, description="Filtrar por estado de eliminación"),
+    current_user: User = Depends(require_role("ADMIN", "STOCK")),
+    db: Session = Depends(get_db),
+) -> AdminCategoriaListResponse:
+    """Listar todas las categorías (incluyendo soft-deleted)"""
+    service = AdminService(db)
+    return service.list_categorias_admin(eliminado=eliminado)
+
+
+@router.get("/ingredientes", response_model=AdminIngredienteListResponse)
+async def list_ingredientes_admin(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    es_alergeno: bool | None = Query(None, description="Filtrar por alérgeno"),
+    eliminado: bool | None = Query(None, description="Filtrar por estado de eliminación"),
+    current_user: User = Depends(require_role("ADMIN", "STOCK")),
+    db: Session = Depends(get_db),
+) -> AdminIngredienteListResponse:
+    """Listar todos los ingredientes (incluyendo soft-deleted) con filtros y paginación"""
+    service = AdminService(db)
+    return service.list_ingredientes_admin(
+        page=page, size=size, es_alergeno=es_alergeno, eliminado=eliminado
+    )

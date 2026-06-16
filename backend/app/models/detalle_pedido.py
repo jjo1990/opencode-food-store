@@ -1,8 +1,8 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.models import Base
@@ -18,7 +18,7 @@ class DetallePedido(Base):
     precio_snapshot = Column(Numeric(10, 2), nullable=False)
     nombre_snapshot = Column(String(200), nullable=False)
     subtotal = Column(Numeric(10, 2), nullable=False)
-    personalizacion = Column(ARRAY(UUID), nullable=True)
+    personalizacion = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     pedido = relationship("Pedido", back_populates="detalles")

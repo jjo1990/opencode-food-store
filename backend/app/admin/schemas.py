@@ -107,3 +107,75 @@ class AdminChangeStateRequest(BaseModel):
         if v is not None and len(v) > 500:
             raise ValueError("Motivo no puede exceder 500 caracteres")
         return v
+
+
+# ─── Catalog Management Schemas ─────────────────────────────────────────
+
+
+class AdminProductoListItem(BaseModel):
+    """Producto item for admin list response"""
+
+    id: UUID
+    nombre: str
+    precio_base: float
+    stock_cantidad: int
+    disponible: bool
+    eliminado: bool
+    soft_deleted_at: datetime | None = None
+    created_at: datetime
+    categorias: list[str] = []
+
+    model_config = {"from_attributes": True}
+
+
+class AdminProductoListResponse(BaseModel):
+    """Paginated producto list response for admin"""
+
+    items: list[AdminProductoListItem]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class AdminCategoriaListItem(BaseModel):
+    """Categoria item for admin list response"""
+
+    id: UUID
+    nombre: str
+    parent_id: UUID | None = None
+    eliminado: bool
+    soft_deleted_at: datetime | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminCategoriaListResponse(BaseModel):
+    """Categoria list response for admin (no pagination)"""
+
+    items: list[AdminCategoriaListItem]
+    total: int
+
+
+class AdminIngredienteListItem(BaseModel):
+    """Ingrediente item for admin list response"""
+
+    id: UUID
+    nombre: str
+    es_alergeno: bool
+    eliminado: bool
+    soft_deleted_at: datetime | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AdminIngredienteListResponse(BaseModel):
+    """Paginated ingrediente list response for admin"""
+
+    items: list[AdminIngredienteListItem]
+    total: int
+    page: int
+    size: int
+    pages: int

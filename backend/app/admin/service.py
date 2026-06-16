@@ -8,10 +8,22 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.admin.repository import AdminOrderRepository, AdminUserRepository
+from app.admin.repository import (
+    AdminCategoriaRepository,
+    AdminIngredienteRepository,
+    AdminOrderRepository,
+    AdminProductoRepository,
+    AdminUserRepository,
+)
 from app.admin.schemas import (
+    AdminCategoriaListItem,
+    AdminCategoriaListResponse,
     AdminChangeStateRequest,
+    AdminIngredienteListItem,
+    AdminIngredienteListResponse,
     AdminOrderListResponse,
+    AdminProductoListItem,
+    AdminProductoListResponse,
     AdminUserListResponse,
     AdminUserResponse,
     AdminUserUpdateRequest,
@@ -273,9 +285,7 @@ class AdminService:
         ]
 
         pages = max(1, (total + size - 1) // size)
-        return AdminOrderListResponse(
-            items=items, total=total, page=page, size=size, pages=pages
-        )
+        return AdminOrderListResponse(items=items, total=total, page=page, size=size, pages=pages)
 
     def change_order_state_admin(
         self,
@@ -372,3 +382,98 @@ class AdminService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error al cambiar estado del pedido: {str(e)}",
             )
+
+    # ─── Catalog Management Methods ──────────────────────────────────────
+
+    def list_productos_admin(
+        self,
+        page: int = 1,
+        size: int = 20,
+        search: str | None = None,
+        disponible: bool | None = None,
+        eliminado: bool | None = None,
+        categoria_id: UUID | None = None,
+    ) -> AdminProductoListResponse:
+        """List all productos for admin (including soft-deleted)"""
+        repo = AdminProductoRepository(self.db)
+        skip = (page - 1) * size
+        items, total = repo.list_all_admin(
+            skip=skip,
+            limit=size,
+            search=search,
+            disponible=disponible,
+            eliminado=eliminado,
+            categoria_id=categoria_id,
+        )
+        pages = max(1, (total + size - 1) // size) if size > 0 else 1
+
+        result_items = []
+        for p in items:
+            categoria_names = [c.nombre for c in p.categorias or []]
+            result_items.append(
+                AdminProductoListItem(
+                    id=p.id,
+                    nombre=p.nombre,
+                    precio_base=float(p.precio_base),
+                    stock_cantidad=p.stock_cantidad,
+                    disponible=p.disponible,
+                    eliminado=p.soft_deleted_at is not None,
+                    soft_deleted_at=p.soft_deleted_at,
+                    created_at=p.created_at,
+                    categorias=categoria_names,
+                )
+            )
+
+        return AdminProductoListResponse(
+            items=result_items, total=total, page=page, size=size, pages=pages
+        )
+
+    def list_categorias_admin(self, eliminado: bool | None = None) -> AdminCategoriaListResponse:
+        """List all categorias for admin (including soft-deleted)"""
+        repo = AdminCategoriaRepository(self.db)
+        items, total = repo.list_all_admin(eliminado=eliminado)
+
+        result_items = [
+            AdminCategoriaListItem(
+                id=c.id,
+                nombre=c.nombre,
+                parent_id=c.parent_id,
+                eliminado=c.soft_deleted_at is not None,
+                soft_deleted_at=c.soft_deleted_at,
+                created_at=c.created_at,
+            )
+            for c in items
+        ]
+
+        return AdminCategoriaListResponse(items=result_items, total=total)
+
+    def list_ingredientes_admin(
+        self,
+        page: int = 1,
+        size: int = 20,
+        es_alergeno: bool | None = None,
+        eliminado: bool | None = None,
+    ) -> AdminIngredienteListResponse:
+        """List all ingredientes for admin (including soft-deleted)"""
+        repo = AdminIngredienteRepository(self.db)
+        skip = (page - 1) * size
+        items, total = repo.list_all_admin(
+            skip=skip, limit=size, es_alergeno=es_alergeno, eliminado=eliminado
+        )
+        pages = max(1, (total + size - 1) // size) if size > 0 else 1
+
+        result_items = [
+            AdminIngredienteListItem(
+                id=i.id,
+                nombre=i.nombre,
+                es_alergeno=i.es_alergeno,
+                eliminado=i.soft_deleted_at is not None,
+                soft_deleted_at=i.soft_deleted_at,
+                created_at=i.created_at,
+            )
+            for i in items
+        ]
+
+        return AdminIngredienteListResponse(
+            items=result_items, total=total, page=page, size=size, pages=pages
+        )

@@ -127,6 +127,7 @@ class ProductoService:
         precio_min: Decimal | None = None,
         precio_max: Decimal | None = None,
         is_public: bool = False,
+        include_deleted: bool = False,
     ) -> PaginatedProductos | PublicPaginatedProductos:
         """List productos with pagination and optional filters"""
         if is_public:
@@ -140,6 +141,7 @@ class ProductoService:
             disponible=disponible,
             precio_min=precio_min,
             precio_max=precio_max,
+            include_deleted=include_deleted,
         )
         total = self.repo.count(
             categoria_id=categoria_id,
@@ -147,6 +149,7 @@ class ProductoService:
             disponible=disponible,
             precio_min=precio_min,
             precio_max=precio_max,
+            include_deleted=include_deleted,
         )
 
         if is_public:

@@ -50,14 +50,17 @@ async def list_productos(
     disponible: bool | None = Query(None),
     precio_min: Decimal | None = Query(None, ge=0),
     precio_max: Decimal | None = Query(None, ge=0),
+    incluir_eliminados: bool = Query(
+        False, description="Incluir productos soft-deleted (solo ADMIN/STOCK)"
+    ),
     current_user: User | None = Depends(get_optional_current_user),
     db: Session = Depends(get_db),
 ) -> PaginatedProductos | PublicPaginatedProductos:
     """List productos with pagination and filters"""
     service = ProductoService(db)
-    is_public = not current_user or not any(
-        r.role in ("ADMIN", "STOCK") for r in current_user.roles
-    )
+    is_admin = current_user and any(r.role in ("ADMIN", "STOCK") for r in current_user.roles)
+    is_public = not is_admin
+    include_deleted = incluir_eliminados and is_admin
     return service.list_productos(
         skip=skip,
         limit=limit,
@@ -67,6 +70,7 @@ async def list_productos(
         precio_min=precio_min,
         precio_max=precio_max,
         is_public=is_public,
+        include_deleted=include_deleted,
     )
 
 

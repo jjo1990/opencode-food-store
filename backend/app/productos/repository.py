@@ -79,9 +79,13 @@ class ProductoRepository:
         disponible: bool | None = None,
         precio_min: Decimal | None = None,
         precio_max: Decimal | None = None,
+        include_deleted: bool = False,
     ) -> list[Producto]:
         """Get active productos with optional filters, ordered by nombre"""
-        query = self._base_query()
+        if include_deleted:
+            query = self.db.query(Producto)
+        else:
+            query = self._base_query()
 
         if categoria_id is not None:
             query = query.join(Producto.categorias).filter(Categoria.id == categoria_id)
@@ -107,9 +111,13 @@ class ProductoRepository:
         disponible: bool | None = None,
         precio_min: Decimal | None = None,
         precio_max: Decimal | None = None,
+        include_deleted: bool = False,
     ) -> int:
         """Count active productos with optional filters"""
-        query = self._base_query()
+        if include_deleted:
+            query = self.db.query(Producto)
+        else:
+            query = self._base_query()
 
         if categoria_id is not None:
             query = query.join(Producto.categorias).filter(Categoria.id == categoria_id)

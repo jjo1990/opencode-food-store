@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-04 (Change 38 archived — Admin Order Management endpoints complete)
+> **Última actualización**: 2026-06-16 (Change 39 archived — Admin Catalog Access complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -507,25 +507,6 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 39: `implement-admin-catalog-access`
-
-- **Funcionalidad**: Endpoints de catálogo aceptan roles ADMIN+STOCK:
-  - **GET /api/v1/productos**: ahora retorna TODOS los productos (incluyendo no disponibles) si usuario es ADMIN/STOCK
-  - **POST/PUT/DELETE /productos**: solo ADMIN/STOCK
-  - Panel admin: CRUD de productos (crear, editar stock, cambiar disponibilidad, eliminar)
-  - CRUD de categorías: crear, editar, eliminar
-  - CRUD de ingredientes: crear, editar, eliminar
-  - Acceso: solo ADMIN/STOCK ver el menú "Catálogo"
-
-- **Historias**: US-064
-- **Dependencias**: `implement-products-crud`, `implement-categories-crud`, `implement-ingredients-crud`, `implement-rbac-system`
-- **Orden**: 39
-- **Duración**: ~3 horas
-
-**Por qué**: Requiere todos los CRUD del catálogo.
-
----
-
 ### Change 40: `implement-metrics-endpoints`
 
 - **Funcionalidad**: Endpoints de agregación para dashboard:
@@ -1019,6 +1000,21 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-order-fsm-transitions`, `implement-admin-users-management`
 - **Estado**: ✅ Hecho (archivado 2026-06-04)
 - **Evidencia**: `openspec/changes/archive/2026-06-04-implement-admin-order-management/`
+
+### Change 39: `implement-admin-catalog-access`
+
+- **Funcionalidad**: Endpoints de catálogo aceptan roles ADMIN+STOCK:
+  - **GET /api/v1/productos**: ahora retorna TODOS los productos (incluyendo no disponibles) si usuario es ADMIN/STOCK
+  - **POST/PUT/DELETE /productos**: solo ADMIN/STOCK
+  - Panel admin: CRUD de productos (crear, editar stock, cambiar disponibilidad, eliminar)
+  - CRUD de categorías: crear, editar, eliminar
+  - CRUD de ingredientes: crear, editar, eliminar
+  - Acceso: solo ADMIN/STOCK ver el menú "Catálogo"
+
+- **Historias**: US-064
+- **Dependencias**: `implement-products-crud`, `implement-categories-crud`, `implement-ingredients-crud`, `implement-rbac-system`
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-catalog-access/`
 
 ---
 
