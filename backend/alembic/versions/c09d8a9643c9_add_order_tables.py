@@ -9,7 +9,6 @@ Create Date: 2026-05-27 10:33:58.712152
 from collections.abc import Sequence
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -81,7 +80,7 @@ def upgrade() -> None:
         sa.Column("precio_snapshot", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("nombre_snapshot", sa.String(length=200), nullable=False),
         sa.Column("subtotal", sa.Numeric(precision=10, scale=2), nullable=False),
-        sa.Column("personalizacion", postgresql.ARRAY(sa.UUID()), nullable=True),
+        sa.Column("personalizacion", sa.JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
             ["pedido_id"],
