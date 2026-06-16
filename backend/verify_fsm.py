@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Quick FSM verification script for Task 9"""
 
-from app.pedidos.service import TRANSITIONS, TERMINAL_STATES
+from app.pedidos.service import TERMINAL_STATES, TRANSITIONS
 
 print("=" * 70)
 print("TASK 9: FSM Compatibility Verification")
@@ -10,16 +9,16 @@ print("=" * 70)
 
 # 1. Verify FSM structure
 print("\n[OK] FSM loaded successfully")
-print("  Terminal states: {}".format(TERMINAL_STATES))
+print(f"  Terminal states: {TERMINAL_STATES}")
 assert TERMINAL_STATES == {"ENTREGADO", "CANCELADO"}, "Terminal states mismatch"
 
 # 2. Verify all transitions have required fields
 print("\n[OK] Checking transition structure...")
 for from_state, transitions in TRANSITIONS.items():
     for to_state, info in transitions.items():
-        assert "roles" in info, "{}->{} missing 'roles'".format(from_state, to_state)
-        assert "stock_action" in info, "{}->{} missing 'stock_action'".format(from_state, to_state)
-        assert isinstance(info["roles"], list), "{}->{} roles must be list".format(from_state, to_state)
+        assert "roles" in info, f"{from_state}->{to_state} missing 'roles'"
+        assert "stock_action" in info, f"{from_state}->{to_state} missing 'stock_action'"
+        assert isinstance(info["roles"], list), f"{from_state}->{to_state} roles must be list"
 print("  All transitions have correct structure")
 
 # 3. Verify stock restoration scenarios
@@ -30,7 +29,7 @@ stock_restore_transitions = [
 ]
 for from_s, to_s in stock_restore_transitions:
     info = TRANSITIONS[from_s][to_s]
-    assert info["stock_action"] == "restore", "{}->{} should restore stock".format(from_s, to_s)
+    assert info["stock_action"] == "restore", f"{from_s}->{to_s} should restore stock"
 print("  All CANCELADO transitions from non-terminal states restore stock")
 
 # 4. Verify role permissions for key transitions

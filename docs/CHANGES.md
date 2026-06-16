@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 40 archived — Metrics endpoints complete)
+> **Última actualización**: 2026-06-16 (Change 41 archived — Admin Dashboard UI complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -509,24 +509,6 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 41: `implement-admin-dashboard-ui`
-
-- **Funcionalidad**: Dashboard visual:
-  - Layout: sidebar + main content area
-  - KPIs en cards: Total ventas (hoy/mes), Pedidos pendientes, Usuarios, Órdenes entregadas
-  - LineChart (recharts): ventas por día/semana/mes, selector de período
-  - BarChart: top 10 productos vendidos
-  - PieChart: distribución de estados de pedido
-  - Filtros: rango de fechas, granularidad (día/semana/mes)
-  - Responsive: adapta a tablet/mobile
-
-- **Historias**: US-056, US-057, US-058, US-059
-- **Dependencias**: `implement-metrics-endpoints`
-- **Orden**: 41
-- **Duración**: ~6 horas
-
-**Por qué**: Necesita endpoints de métricas.
-
 ---
 
 ### Change 42: `implement-admin-users-ui`
@@ -1012,6 +994,21 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-order-creation-atomically`, `implement-admin-users-management`
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-metrics-endpoints/`
+
+### Change 41: `implement-admin-dashboard-ui`
+
+- **Funcionalidad**: Dashboard visual:
+  - Layout: sidebar + main content area
+  - KPIs en cards: Total ventas (hoy/mes), Pedidos pendientes, Usuarios, Órdenes entregadas
+  - LineChart (recharts): ventas por día/semana/mes, selector de período
+  - BarChart: top 10 productos vendidos
+  - PieChart: distribución de estados de pedido
+  - Filtros: rango de fechas, granularidad (día/semana/mes)
+  - Responsive: adapta a tablet/mobile
+- **Historias**: US-056, US-057, US-058, US-059
+- **Dependencias**: `implement-metrics-endpoints`
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-dashboard-ui/`
 
 ---
 

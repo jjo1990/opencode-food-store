@@ -2,7 +2,6 @@
 Integration tests for Admin Order Endpoints
 """
 
-from datetime import datetime
 from uuid import UUID
 
 import pytest
@@ -11,14 +10,13 @@ from sqlalchemy.orm import Session
 
 from app.main import app
 from app.models import User, UserRole
-from app.models.pedido import Pedido
+from app.models.categoria import Categoria
+from app.models.detalle_pedido import DetallePedido
 from app.models.estado_pedido import EstadoPedido
 from app.models.forma_pago import FormaPago
-from app.models.producto import Producto
-from app.models.detalle_pedido import DetallePedido
 from app.models.historial_estado_pedido import HistorialEstadoPedido
-from app.models.categoria import Categoria
-
+from app.models.pedido import Pedido
+from app.models.producto import Producto
 
 client = TestClient(app)
 
@@ -30,7 +28,14 @@ def auth_tokens(db: Session):
 
     # Create estado pedido
     for idx, codigo in enumerate(["PENDIENTE", "CONFIRMADO", "CANCELADO"]):
-        db.add(EstadoPedido(codigo=codigo, descripcion=codigo, orden=idx+1, es_terminal=(codigo=="CANCELADO")))
+        db.add(
+            EstadoPedido(
+                codigo=codigo,
+                descripcion=codigo,
+                orden=idx + 1,
+                es_terminal=(codigo == "CANCELADO"),
+            )
+        )
     db.commit()
 
     # Create users

@@ -2,7 +2,6 @@
 Tests for Admin Order Service
 """
 
-from datetime import datetime
 from uuid import UUID
 
 import pytest
@@ -12,22 +11,26 @@ from sqlalchemy.orm import Session
 from app.admin.schemas import AdminChangeStateRequest
 from app.admin.service import AdminService
 from app.models import User, UserRole
-from app.models.pedido import Pedido
+from app.models.categoria import Categoria
+from app.models.detalle_pedido import DetallePedido
 from app.models.estado_pedido import EstadoPedido
 from app.models.forma_pago import FormaPago
-from app.models.producto import Producto
-from app.models.detalle_pedido import DetallePedido
 from app.models.historial_estado_pedido import HistorialEstadoPedido
-from app.models.categoria import Categoria
+from app.models.pedido import Pedido
+from app.models.producto import Producto
 
 
 @pytest.fixture
 def setup_order_test_data(db: Session):
     """Setup test data for order state change tests"""
     # Create estado pedido
-    for idx, codigo in enumerate(["PENDIENTE", "CONFIRMADO", "EN_PREPARACION", "EN_CAMINO", "ENTREGADO", "CANCELADO"]):
+    for idx, codigo in enumerate(
+        ["PENDIENTE", "CONFIRMADO", "EN_PREPARACION", "EN_CAMINO", "ENTREGADO", "CANCELADO"]
+    ):
         es_terminal = codigo in ["ENTREGADO", "CANCELADO"]
-        db.add(EstadoPedido(codigo=codigo, descripcion=codigo, orden=idx+1, es_terminal=es_terminal))
+        db.add(
+            EstadoPedido(codigo=codigo, descripcion=codigo, orden=idx + 1, es_terminal=es_terminal)
+        )
     db.commit()
 
     # Create forma pago
@@ -122,9 +125,7 @@ def test_change_order_state_valid_transition(db: Session, setup_order_test_data)
     service = AdminService(db)
 
     request = AdminChangeStateRequest(nuevo_estado="CONFIRMADO", motivo="Auto approved")
-    result = service.change_order_state_admin(
-        data["pedido"].id, request, data["admin_user"]
-    )
+    result = service.change_order_state_admin(data["pedido"].id, request, data["admin_user"])
 
     assert result.estado_codigo == "CONFIRMADO"
     assert result.id == data["pedido"].id
@@ -139,9 +140,7 @@ def test_change_order_state_invalid_transition(db: Session, setup_order_test_dat
     request = AdminChangeStateRequest(nuevo_estado="EN_CAMINO")
 
     with pytest.raises(HTTPException) as exc:
-        service.change_order_state_admin(
-            data["pedido"].id, request, data["admin_user"]
-        )
+        service.change_order_state_admin(data["pedido"].id, request, data["admin_user"])
 
     assert exc.value.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -158,9 +157,7 @@ def test_change_order_state_terminal_state(db: Session, setup_order_test_data, d
     request = AdminChangeStateRequest(nuevo_estado="CANCELADO")
 
     with pytest.raises(HTTPException) as exc:
-        service.change_order_state_admin(
-            data["pedido"].id, request, data["admin_user"]
-        )
+        service.change_order_state_admin(data["pedido"].id, request, data["admin_user"])
 
     assert exc.value.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -185,14 +182,10 @@ def test_change_order_state_creates_audit_entry(db: Session, setup_order_test_da
     service = AdminService(db)
 
     request = AdminChangeStateRequest(nuevo_estado="CONFIRMADO", motivo="Manual approval")
-    service.change_order_state_admin(
-        data["pedido"].id, request, data["admin_user"]
-    )
+    service.change_order_state_admin(data["pedido"].id, request, data["admin_user"])
 
     # Verify historial entry was created
-    historial_entries = db.query(HistorialEstadoPedido).filter_by(
-        pedido_id=data["pedido"].id
-    ).all()
+    historial_entries = db.query(HistorialEstadoPedido).filter_by(pedido_id=data["pedido"].id).all()
 
     assert len(historial_entries) == 2  # Initial + new transition
     latest = historial_entries[-1]
@@ -227,9 +220,7 @@ def test_change_order_state_role_unauthorized(db: Session, setup_order_test_data
     request = AdminChangeStateRequest(nuevo_estado="EN_PREPARACION")
 
     with pytest.raises(HTTPException) as exc:
-        service.change_order_state_admin(
-            data["pedido"].id, request, otro_user
-        )
+        service.change_order_state_admin(data["pedido"].id, request, otro_user)
 
     assert exc.value.status_code == status.HTTP_403_FORBIDDEN
 

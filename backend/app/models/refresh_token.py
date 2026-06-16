@@ -1,16 +1,20 @@
 """
 RefreshToken model
 """
-from uuid import uuid4
+
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index
+from uuid import uuid4
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from app.models import Base
 
 
 class RefreshToken(Base):
     """RefreshToken model for token refresh and rotation"""
+
     __tablename__ = "refresh_token"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
