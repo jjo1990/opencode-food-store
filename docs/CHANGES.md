@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 41 archived — Admin Dashboard UI complete)
+> **Última actualización**: 2026-06-16 (Change 42 archived — Admin Users UI complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -511,25 +511,6 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 42: `implement-admin-users-ui`
-
-- **Funcionalidad**: Panel de gestión de usuarios:
-  - Tabla: ID, nombre, email, roles (badges), estado (activo/inactivo), fecha creación
-  - Búsqueda: input de búsqueda (debounce) por nombre/email
-  - Filtros: por rol (selectores múltiples), estado
-  - Acciones: click en fila abre modal de edición
-  - Modal: campos nombre, email, teléfono, selector de roles (checkboxes), toggle activo/inactivo, botones Guardar/Cancelar
-  - Confirmación crítica: si se quita rol ADMIN, pedir confirmación
-
-- **Historias**: US-053, US-054, US-055
-- **Dependencias**: `implement-admin-users-management`, `implement-admin-dashboard-ui`
-- **Orden**: 42
-- **Duración**: ~4 horas
-
-**Por qué**: Necesita endpoints y dashboard.
-
----
-
 ### Change 43: `implement-admin-orders-management-ui`
 
 - **Funcionalidad**: Panel de gestión de pedidos:
@@ -1009,6 +990,21 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-metrics-endpoints`
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-dashboard-ui/`
+
+### Change 42: `implement-admin-users-ui`
+
+- **Funcionalidad**: Panel de gestión de usuarios:
+  - Tabla: ID, nombre, email, roles (badges), estado (activo/inactivo), fecha creación
+  - Búsqueda: input de búsqueda (debounce) por nombre/email
+  - Filtros: por rol (selectores múltiples), estado
+  - Acciones: click en fila abre modal de edición
+  - Modal: campos nombre, email, teléfono, selector de roles (checkboxes), toggle activo/inactivo, botones Guardar/Cancelar
+  - Confirmación crítica: si se quita rol ADMIN, pedir confirmación
+
+- **Historias**: US-053, US-054, US-055
+- **Dependencias**: `implement-admin-users-management`, `implement-admin-dashboard-ui`
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-users-ui/`
 
 ---
 
