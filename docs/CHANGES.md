@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 42 archived — Admin Users UI complete)
+> **Última actualización**: 2026-06-16 (Change 43 archived — Admin Orders Management UI complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -511,22 +511,7 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 43: `implement-admin-orders-management-ui`
-
-- **Funcionalidad**: Panel de gestión de pedidos:
-  - Tabla: ID, cliente, monto, estado (badge), fecha
-  - Búsqueda/filtros: por ID de pedido, nombre de cliente, estado, fecha range
-  - Hover en fila: preview de datos (cliente, dirección, items)
-  - Click: modal de detalle
-  - Modal: snapshots completos, historial timeline, estado actual, botones de acción (Avanzar Estado, Cancelar)
-  - Avanzar Estado: dropdown con estado siguiente válido, input de motivo (obligatorio si CANCELADO)
-
-- **Historias**: US-051, US-052, US-065
-- **Dependencias**: `implement-admin-order-management`, `implement-admin-dashboard-ui`
-- **Orden**: 43
-- **Duración**: ~5 horas
-
-**Por qué**: Necesita gestión de pedidos backend.
+<!-- Change 43 archived 2026-06-16 -->
 
 ---
 
@@ -1005,6 +990,21 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-admin-users-management`, `implement-admin-dashboard-ui`
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-users-ui/`
+
+### Change 43: `implement-admin-orders-management-ui`
+
+- **Funcionalidad**: Panel de gestión de pedidos:
+  - Tabla: ID, cliente, monto, estado (badge), fecha
+  - Búsqueda/filtros: por ID de pedido, nombre de cliente, estado, fecha range
+  - Hover en fila: preview de datos (cliente, dirección, items)
+  - Click: modal de detalle
+  - Modal: snapshots completos, historial timeline, estado actual, botones de acción (Avanzar Estado, Cancelar)
+  - Avanzar Estado: dropdown con estado siguiente válido, input de motivo (obligatorio si CANCELADO)
+
+- **Historias**: US-051, US-052, US-065
+- **Dependencias**: `implement-admin-order-management`, `implement-admin-dashboard-ui`
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-orders-management-ui/`
 
 ---
 
