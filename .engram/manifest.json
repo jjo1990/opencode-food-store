@@ -112,6 +112,14 @@
       "sessions": 0,
       "memories": 2,
       "prompts": 2
+    },
+    {
+      "id": "e242980f",
+      "created_by": "AyP computacion",
+      "created_at": "2026-06-16T23:20:19Z",
+      "sessions": 0,
+      "memories": 2,
+      "prompts": 0
     }
   ]
 }
