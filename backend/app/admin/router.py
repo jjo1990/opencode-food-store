@@ -21,6 +21,8 @@ from app.admin.schemas import (
     MetricsProductoTopResponse,
     MetricsResumenResponse,
     MetricsVentasResponse,
+    SystemConfigResponse,
+    SystemConfigUpdateRequest,
 )
 from app.admin.service import AdminService
 from app.auth.schemas import UpdateRolesRequest, UserResponse
@@ -405,3 +407,22 @@ async def get_metrics_pedidos_por_estado(
     """Obtener distribución de pedidos por estado con porcentajes (ADMIN only)."""
     service = AdminService(db)
     return service.get_metrics_pedidos_por_estado()
+
+
+@router.get("/configuracion", response_model=SystemConfigResponse)
+async def get_configuracion(
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> SystemConfigResponse:
+    service = AdminService(db)
+    return service.get_config()
+
+
+@router.put("/configuracion", response_model=SystemConfigResponse)
+async def update_configuracion(
+    request: SystemConfigUpdateRequest,
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> SystemConfigResponse:
+    service = AdminService(db)
+    return service.update_config(request, current_user)

@@ -234,3 +234,24 @@ class MetricsPedidosEstadoResponse(BaseModel):
     """Order status distribution"""
 
     items: list[MetricsPedidosEstadoItem]
+
+
+class SystemConfigAuditItem(BaseModel):
+    """Audit metadata for a single config key"""
+
+    updated_by: UUID | None = None
+    updated_by_name: str | None = None
+    updated_at: datetime | None = None
+
+
+class SystemConfigResponse(BaseModel):
+    """Response for GET/PUT /admin/configuracion"""
+
+    configuracion: dict[str, str]
+    auditoria: dict[str, SystemConfigAuditItem]
+
+
+class SystemConfigUpdateRequest(BaseModel):
+    """Request body for PUT /admin/configuracion"""
+
+    configuracion: dict[str, str]

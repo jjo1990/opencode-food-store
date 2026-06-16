@@ -20,6 +20,13 @@ const menuItems: NavItem[] = [
   },
   { label: 'Dashboard', path: '/admin', icon: '📊', allowedRoles: ['ADMIN'], section: 'admin' },
   {
+    label: 'Configuración',
+    path: '/admin/configuracion',
+    icon: '⚙️',
+    allowedRoles: ['ADMIN'],
+    section: 'admin',
+  },
+  {
     label: 'Catálogo',
     path: '/admin/productos',
     icon: '🏪',

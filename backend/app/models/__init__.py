@@ -19,6 +19,7 @@ from app.models.producto import Producto  # noqa: E402, F401
 from app.models.producto_categoria import ProductoCategoria  # noqa: E402, F401
 from app.models.producto_ingrediente import ProductoIngrediente  # noqa: E402, F401
 from app.models.refresh_token import RefreshToken  # noqa: E402, F401
+from app.models.system_config import SystemConfig  # noqa: E402, F401
 from app.models.user import User  # noqa: E402, F401
 from app.models.user_role import UserRole  # noqa: E402, F401
 
@@ -39,4 +40,5 @@ __all__ = [
     "DetallePedido",
     "HistorialEstadoPedido",
     "Pago",
+    "SystemConfig",
 ]

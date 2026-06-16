@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 43 archived — Admin Orders Management UI complete)
+> **Última actualización**: 2026-06-16 (Change 44 archived — Phase 7 ADMIN COMPLETE)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -515,23 +515,7 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 44: `implement-system-configuration`
-
-- **Funcionalidad**: Configuración del sistema:
-  - Endpoint `GET/PUT /api/v1/admin/configuracion`:
-    - Tabla key-value en BD con parámetros del sistema
-    - Parámetros iniciales: horario_apertura, horario_cierre, zona_entrega (geolocalización simple), costo_envio, mensaje_bienvenida
-    - Auditoría: registra quién cambió qué y cuándo
-  - UI minimal: formulario con pares clave-valor, botón Guardar, confirmación
-
-- **Historias**: US-060
-- **Dependencias**: `implement-admin-dashboard-ui`
-- **Orden**: 44
-- **Duración**: ~3 horas
-
-**Por qué**: Parametrización del sistema.
-
----
+<!-- Change 44 archived 2026-06-16 -->
 
 ---
 
@@ -1005,6 +989,13 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-admin-order-management`, `implement-admin-dashboard-ui`
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-orders-management-ui/`
+
+### Change 44: `implement-system-configuration`
+
+- **Funcionalidad**: Configuración del sistema — Endpoints GET/PUT para tabla key-value con parámetros (horario_apertura, horario_cierre, zona_entrega, costo_envio, mensaje_bienvenida) y auditoría de cambios. UI minimal con formulario clave-valor.
+- **Historias**: US-060
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-system-configuration/`
 
 ---
 

@@ -18,6 +18,7 @@ const AdminReportsPage = lazy(() => import('../pages/admin/AdminReportsPage'));
 const AdminProductosPage = lazy(() => import('../pages/admin/AdminProductosPage'));
 const AdminCategoriasPage = lazy(() => import('../pages/admin/AdminCategoriasPage'));
 const AdminIngredientesPage = lazy(() => import('../pages/admin/AdminIngredientesPage'));
+const AdminConfigPage = lazy(() => import('../pages/admin/AdminConfigPage'));
 
 const StockProductsPage = lazy(() => import('../pages/stock/StockProductsPage'));
 const StockCategoriesPage = lazy(() => import('../pages/stock/StockCategoriesPage'));
@@ -117,6 +118,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['ADMIN', 'STOCK']}>
             <AdminIngredientesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/configuracion',
+        element: (
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminConfigPage />
           </ProtectedRoute>
         ),
       },

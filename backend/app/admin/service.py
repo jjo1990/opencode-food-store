@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.admin.repository import (
     AdminCategoriaRepository,
+    AdminConfigRepository,
     AdminIngredienteRepository,
     AdminMetricsRepository,
     AdminOrderRepository,
@@ -35,6 +36,9 @@ from app.admin.schemas import (
     MetricsResumenResponse,
     MetricsVentasItem,
     MetricsVentasResponse,
+    SystemConfigAuditItem,
+    SystemConfigResponse,
+    SystemConfigUpdateRequest,
 )
 from app.auth.repository import RefreshTokenRepository, UserRepository
 from app.auth.schemas import UserResponse
@@ -57,6 +61,7 @@ class AdminService:
         self.db = db
         self.user_repo = UserRepository(db)
         self.metrics_repo = AdminMetricsRepository(db)
+        self.config_repo = AdminConfigRepository(db)
 
     def assign_roles_to_user(self, user_id: UUID, roles: list[str]) -> UserResponse:
         """Assign roles to a user"""
@@ -612,3 +617,23 @@ class AdminService:
             )
 
         return MetricsPedidosEstadoResponse(items=items)
+
+    def get_config(self) -> SystemConfigResponse:
+        rows = self.config_repo.get_all()
+        configuracion = {}
+        auditoria = {}
+        for row, updated_by_name in rows:
+            configuracion[row.clave] = row.valor
+            auditoria[row.clave] = SystemConfigAuditItem(
+                updated_by=row.updated_by,
+                updated_by_name=updated_by_name,
+                updated_at=row.updated_at,
+            )
+        return SystemConfigResponse(configuracion=configuracion, auditoria=auditoria)
+
+    def update_config(
+        self, data: SystemConfigUpdateRequest, current_user: User
+    ) -> SystemConfigResponse:
+        for clave, valor in data.configuracion.items():
+            self.config_repo.upsert(clave, valor, updated_by=current_user.id)
+        return self.get_config()

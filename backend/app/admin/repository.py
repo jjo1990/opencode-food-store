@@ -354,3 +354,41 @@ class AdminMetricsRepository:
         )
 
         return [{"estado": row[0], "cantidad": row[1]} for row in rows]
+
+
+class AdminConfigRepository:
+    """Repository for system configuration key-value store"""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_all(self):
+        from app.models.system_config import SystemConfig
+        from app.models.user import User
+
+        return (
+            self.db.query(SystemConfig, User.full_name.label("updated_by_name"))
+            .outerjoin(User, SystemConfig.updated_by == User.id)
+            .all()
+        )
+
+    def get_by_key(self, clave: str):
+        from app.models.system_config import SystemConfig
+
+        return self.db.query(SystemConfig).filter(SystemConfig.clave == clave).first()
+
+    def upsert(self, clave: str, valor: str, updated_by: UUID | None = None):
+        from app.models.system_config import SystemConfig
+
+        existing = self.get_by_key(clave)
+        if existing:
+            existing.valor = valor
+            existing.updated_by = updated_by
+            existing.updated_at = datetime.utcnow()
+        else:
+            new_row = SystemConfig(
+                clave=clave, valor=valor, updated_by=updated_by, updated_at=datetime.utcnow()
+            )
+            self.db.add(new_row)
+        self.db.commit()
+        return self.get_by_key(clave)
