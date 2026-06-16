@@ -1,5 +1,5 @@
 """
-Admin schemas for user management
+Admin schemas for user management and metrics
 """
 
 from datetime import datetime
@@ -179,3 +179,58 @@ class AdminIngredienteListResponse(BaseModel):
     page: int
     size: int
     pages: int
+
+
+# ─── Metrics Schemas ────────────────────────────────────────────────────
+
+
+class MetricsResumenResponse(BaseModel):
+    """KPIs generales: ventas, pedidos, distribución por estado, usuarios"""
+
+    total_ventas: float
+    cantidad_pedidos: int
+    pedidos_por_estado: dict[str, int]
+    usuarios_registrados: int
+
+
+class MetricsVentasItem(BaseModel):
+    """One data point in a ventas time series"""
+
+    fecha: str
+    monto_total: float
+    cantidad_pedidos: int
+
+
+class MetricsVentasResponse(BaseModel):
+    """Time series of ventas aggregated by period"""
+
+    items: list[MetricsVentasItem]
+
+
+class MetricsProductoTopItem(BaseModel):
+    """A top-selling product with quantity and revenue"""
+
+    producto_id: UUID
+    nombre: str
+    cantidad_vendida: int
+    monto_total: float
+
+
+class MetricsProductoTopResponse(BaseModel):
+    """Top N products by quantity sold"""
+
+    items: list[MetricsProductoTopItem]
+
+
+class MetricsPedidosEstadoItem(BaseModel):
+    """Distribution of orders by state with count and percentage"""
+
+    estado: str
+    cantidad: int
+    porcentaje: float
+
+
+class MetricsPedidosEstadoResponse(BaseModel):
+    """Order status distribution"""
+
+    items: list[MetricsPedidosEstadoItem]

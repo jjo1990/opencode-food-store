@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 39 archived — Admin Catalog Access complete)
+> **Última actualización**: 2026-06-16 (Change 40 archived — Metrics endpoints complete)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -507,27 +507,6 @@ _Control total del negocio desde un solo lugar._
 
 ---
 
-### Change 40: `implement-metrics-endpoints`
-
-- **Funcionalidad**: Endpoints de agregación para dashboard:
-  - **GET /api/v1/admin/metricas/resumen**: KPIs generales
-    - { total_ventas, cantidad_pedidos, pedidos_por_estado: {PENDIENTE: N, CONFIRMADO: N, ...}, usuarios_registrados }
-  - **GET /api/v1/admin/metricas/ventas**: por período (día/semana/mes)
-    - Recibe: { fecha_inicio, fecha_fin, granularidad: "day"|"week"|"month" }
-    - Retorna: array de { fecha, monto_total, cantidad_pedidos }
-  - **GET /api/v1/admin/metricas/productos-top**: top 10 productos más vendidos
-    - Retorna: array de { producto_id, nombre, cantidad_vendida, monto_total }
-  - **GET /api/v1/admin/metricas/pedidos-por-estado**: distribución actual
-    - Retorna: array de { estado, cantidad, porcentaje }
-  - Todas protegidas por rol ADMIN
-
-- **Historias**: US-056, US-057, US-058, US-059
-- **Dependencias**: `implement-order-creation-atomically`, `implement-admin-users-management`
-- **Orden**: 40
-- **Duración**: ~5 horas
-
-**Por qué**: Necesita pedidos completos + auditoría.
-
 ---
 
 ### Change 41: `implement-admin-dashboard-ui`
@@ -1015,6 +994,24 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Dependencias**: `implement-products-crud`, `implement-categories-crud`, `implement-ingredients-crud`, `implement-rbac-system`
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-admin-catalog-access/`
+
+### Change 40: `implement-metrics-endpoints`
+
+- **Funcionalidad**: Endpoints de agregación para dashboard:
+  - **GET /api/v1/admin/metricas/resumen**: KPIs generales
+    - { total_ventas, cantidad_pedidos, pedidos_por_estado: {PENDIENTE: N, CONFIRMADO: N, ...}, usuarios_registrados }
+  - **GET /api/v1/admin/metricas/ventas**: por período (día/semana/mes)
+    - Recibe: { fecha_inicio, fecha_fin, granularidad: "day"|"week"|"month" }
+    - Retorna: array de { fecha, monto_total, cantidad_pedidos }
+  - **GET /api/v1/admin/metricas/productos-top**: top 10 productos más vendidos
+    - Retorna: array de { producto_id, nombre, cantidad_vendida, monto_total }
+  - **GET /api/v1/admin/metricas/pedidos-por-estado**: distribución actual
+    - Retorna: array de { estado, cantidad, porcentaje }
+  - Todas protegidas por rol ADMIN
+- **Historias**: US-056, US-057, US-058, US-059
+- **Dependencias**: `implement-order-creation-atomically`, `implement-admin-users-management`
+- **Estado**: ✅ Hecho (archivado 2026-06-16)
+- **Evidencia**: `openspec/changes/archive/2026-06-16-implement-metrics-endpoints/`
 
 ---
 

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.admin.repository import (
     AdminCategoriaRepository,
     AdminIngredienteRepository,
+    AdminMetricsRepository,
     AdminOrderRepository,
     AdminProductoRepository,
     AdminUserRepository,
@@ -27,6 +28,13 @@ from app.admin.schemas import (
     AdminUserListResponse,
     AdminUserResponse,
     AdminUserUpdateRequest,
+    MetricsPedidosEstadoItem,
+    MetricsPedidosEstadoResponse,
+    MetricsProductoTopItem,
+    MetricsProductoTopResponse,
+    MetricsResumenResponse,
+    MetricsVentasItem,
+    MetricsVentasResponse,
 )
 from app.auth.repository import RefreshTokenRepository, UserRepository
 from app.auth.schemas import UserResponse
@@ -48,6 +56,7 @@ class AdminService:
     def __init__(self, db: Session):
         self.db = db
         self.user_repo = UserRepository(db)
+        self.metrics_repo = AdminMetricsRepository(db)
 
     def assign_roles_to_user(self, user_id: UUID, roles: list[str]) -> UserResponse:
         """Assign roles to a user"""
@@ -477,3 +486,129 @@ class AdminService:
         return AdminIngredienteListResponse(
             items=result_items, total=total, page=page, size=size, pages=pages
         )
+
+    # ─── Metrics Methods ─────────────────────────────────────────────────
+
+    def get_metrics_resumen(self) -> MetricsResumenResponse:
+        """Return KPIs summary for admin dashboard."""
+        data = self.metrics_repo.get_resumen()
+        return MetricsResumenResponse(
+            total_ventas=data["total_ventas"],
+            cantidad_pedidos=data["cantidad_pedidos"],
+            pedidos_por_estado=data["pedidos_por_estado"],
+            usuarios_registrados=data["usuarios_registrados"],
+        )
+
+    def get_metrics_ventas(
+        self, fecha_inicio, fecha_fin, granularidad: str
+    ) -> MetricsVentasResponse:
+        """Return ventas time series with configurable granularity."""
+        from datetime import date
+
+        if fecha_inicio > fecha_fin:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="fecha_inicio debe ser anterior a fecha_fin",
+            )
+
+        if (fecha_fin - fecha_inicio).days > 365:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="El rango de fechas no puede exceder 365 días",
+            )
+
+        if granularidad not in ("day", "week", "month"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="granularidad debe ser day, week o month",
+            )
+
+        daily_data = self.metrics_repo.get_ventas_por_periodo(fecha_inicio, fecha_fin)
+
+        if granularidad == "day":
+            items = [
+                MetricsVentasItem(
+                    fecha=d["fecha"],
+                    monto_total=d["monto_total"],
+                    cantidad_pedidos=d["cantidad_pedidos"],
+                )
+                for d in daily_data
+            ]
+            return MetricsVentasResponse(items=items)
+
+        if granularidad == "week":
+            from collections import defaultdict
+
+            buckets: dict[str, dict] = defaultdict(
+                lambda: {"monto_total": 0.0, "cantidad_pedidos": 0}
+            )
+            for d in daily_data:
+                parsed = date.fromisoformat(d["fecha"])
+                iso_year, iso_week, _ = parsed.isocalendar()
+                key = f"{iso_year}-W{iso_week:02d}"
+                buckets[key]["monto_total"] += d["monto_total"]
+                buckets[key]["cantidad_pedidos"] += d["cantidad_pedidos"]
+
+            items = [
+                MetricsVentasItem(
+                    fecha=key,
+                    monto_total=round(val["monto_total"], 2),
+                    cantidad_pedidos=val["cantidad_pedidos"],
+                )
+                for key, val in sorted(buckets.items())
+            ]
+            return MetricsVentasResponse(items=items)
+
+        if granularidad == "month":
+            from collections import defaultdict
+
+            buckets: dict[str, dict] = defaultdict(
+                lambda: {"monto_total": 0.0, "cantidad_pedidos": 0}
+            )
+            for d in daily_data:
+                parsed = date.fromisoformat(d["fecha"])
+                key = parsed.strftime("%Y-%m")
+                buckets[key]["monto_total"] += d["monto_total"]
+                buckets[key]["cantidad_pedidos"] += d["cantidad_pedidos"]
+
+            items = [
+                MetricsVentasItem(
+                    fecha=key,
+                    monto_total=round(val["monto_total"], 2),
+                    cantidad_pedidos=val["cantidad_pedidos"],
+                )
+                for key, val in sorted(buckets.items())
+            ]
+            return MetricsVentasResponse(items=items)
+
+    def get_metrics_productos_top(self) -> MetricsProductoTopResponse:
+        """Return top 10 products by quantity sold."""
+        data = self.metrics_repo.get_productos_top()
+        items = [
+            MetricsProductoTopItem(
+                producto_id=d["producto_id"],
+                nombre=d["nombre"],
+                cantidad_vendida=d["cantidad_vendida"],
+                monto_total=d["monto_total"],
+            )
+            for d in data
+        ]
+        return MetricsProductoTopResponse(items=items)
+
+    def get_metrics_pedidos_por_estado(self) -> MetricsPedidosEstadoResponse:
+        """Return order distribution by estado with percentages."""
+        data = self.metrics_repo.get_pedidos_por_estado()
+        total = sum(d["cantidad"] for d in data)
+
+        items = []
+        for d in data:
+            porcentaje = round((d["cantidad"] / total * 100), 2) if total > 0 else 0.0
+            items.append(
+                MetricsPedidosEstadoItem(
+                    estado=d["estado"],
+                    cantidad=d["cantidad"],
+                    porcentaje=porcentaje,
+                )
+            )
+
+        return MetricsPedidosEstadoResponse(items=items)

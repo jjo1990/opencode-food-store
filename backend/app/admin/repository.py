@@ -1,14 +1,16 @@
 """
-Repository layer for admin user management
+Repository layer for admin user management and metrics
 """
 
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models import User, UserRole
 from app.models.categoria import Categoria
+from app.models.detalle_pedido import DetallePedido
 from app.models.ingrediente import Ingrediente
 from app.models.pedido import Pedido
 from app.models.producto import Producto
@@ -246,3 +248,109 @@ class AdminIngredienteRepository:
         total = query.count()
         items = query.order_by(Ingrediente.nombre).offset(skip).limit(limit).all()
         return items, total
+
+
+class AdminMetricsRepository:
+    """Repository for admin dashboard metrics — aggregation queries"""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_resumen(self) -> dict:
+        """Return dict with 4 KPIs: total_ventas, cantidad_pedidos, pedidos_por_estado, usuarios_registrados."""
+        total_ventas = (
+            self.db.query(func.coalesce(func.sum(Pedido.total), 0))
+            .filter(Pedido.soft_deleted_at.is_(None))
+            .scalar()
+        )
+
+        cantidad_pedidos = (
+            self.db.query(func.count(Pedido.id)).filter(Pedido.soft_deleted_at.is_(None)).scalar()
+        )
+
+        pedidos_por_estado_rows = (
+            self.db.query(Pedido.estado_codigo, func.count(Pedido.id))
+            .filter(Pedido.soft_deleted_at.is_(None))
+            .group_by(Pedido.estado_codigo)
+            .all()
+        )
+        pedidos_por_estado = {row[0]: row[1] for row in pedidos_por_estado_rows}
+
+        usuarios_registrados = (
+            self.db.query(func.count(User.id)).filter(User.soft_deleted_at.is_(None)).scalar()
+        )
+
+        return {
+            "total_ventas": float(total_ventas or 0),
+            "cantidad_pedidos": cantidad_pedidos or 0,
+            "pedidos_por_estado": pedidos_por_estado,
+            "usuarios_registrados": usuarios_registrados or 0,
+        }
+
+    def get_ventas_por_periodo(self, fecha_inicio, fecha_fin) -> list[dict]:
+        """Return list of dicts with daily ventas aggregation in [fecha_inicio, fecha_fin]."""
+        rows = (
+            self.db.query(
+                func.date(Pedido.created_at).label("fecha"),
+                func.sum(Pedido.total).label("monto_total"),
+                func.count(Pedido.id).label("cantidad_pedidos"),
+            )
+            .filter(
+                Pedido.soft_deleted_at.is_(None),
+                func.date(Pedido.created_at) >= fecha_inicio,
+                func.date(Pedido.created_at) <= fecha_fin,
+            )
+            .group_by(func.date(Pedido.created_at))
+            .order_by(func.date(Pedido.created_at))
+            .all()
+        )
+
+        return [
+            {
+                "fecha": str(row.fecha),
+                "monto_total": float(row.monto_total or 0),
+                "cantidad_pedidos": row.cantidad_pedidos or 0,
+            }
+            for row in rows
+        ]
+
+    def get_productos_top(self, limit: int = 10) -> list[dict]:
+        """Return top N products by quantity sold, joined with Pedido for soft-delete filter."""
+        rows = (
+            self.db.query(
+                DetallePedido.producto_id,
+                DetallePedido.nombre_snapshot.label("nombre"),
+                func.sum(DetallePedido.cantidad).label("cantidad_vendida"),
+                func.sum(DetallePedido.subtotal).label("monto_total"),
+            )
+            .join(Pedido, DetallePedido.pedido_id == Pedido.id)
+            .filter(Pedido.soft_deleted_at.is_(None))
+            .group_by(DetallePedido.producto_id, DetallePedido.nombre_snapshot)
+            .order_by(func.sum(DetallePedido.cantidad).desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                "producto_id": row.producto_id,
+                "nombre": row.nombre,
+                "cantidad_vendida": row.cantidad_vendida or 0,
+                "monto_total": float(row.monto_total or 0),
+            }
+            for row in rows
+        ]
+
+    def get_pedidos_por_estado(self) -> list[dict]:
+        """Return list of dicts with order count grouped by estado_codigo."""
+        rows = (
+            self.db.query(
+                Pedido.estado_codigo,
+                func.count(Pedido.id).label("cantidad"),
+            )
+            .filter(Pedido.soft_deleted_at.is_(None))
+            .group_by(Pedido.estado_codigo)
+            .all()
+        )
+
+        return [{"estado": row[0], "cantidad": row[1]} for row in rows]

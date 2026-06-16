@@ -2,7 +2,7 @@
 Admin routes for role-based access control and user management
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -17,6 +17,10 @@ from app.admin.schemas import (
     AdminUserListResponse,
     AdminUserResponse,
     AdminUserUpdateRequest,
+    MetricsPedidosEstadoResponse,
+    MetricsProductoTopResponse,
+    MetricsResumenResponse,
+    MetricsVentasResponse,
 )
 from app.admin.service import AdminService
 from app.auth.schemas import UpdateRolesRequest, UserResponse
@@ -355,3 +359,49 @@ async def list_ingredientes_admin(
     return service.list_ingredientes_admin(
         page=page, size=size, es_alergeno=es_alergeno, eliminado=eliminado
     )
+
+
+# ─── Metrics Endpoints ─────────────────────────────────────────────────────
+
+
+@router.get("/metricas/resumen", response_model=MetricsResumenResponse)
+async def get_metrics_resumen(
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> MetricsResumenResponse:
+    """Obtener KPIs generales del negocio (ADMIN only)."""
+    service = AdminService(db)
+    return service.get_metrics_resumen()
+
+
+@router.get("/metricas/ventas", response_model=MetricsVentasResponse)
+async def get_metrics_ventas(
+    fecha_inicio: date = Query(..., description="Fecha de inicio del rango (inclusive)"),
+    fecha_fin: date = Query(..., description="Fecha de fin del rango (inclusive)"),
+    granularidad: str = Query("day", description="Granularidad: day, week, month"),
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> MetricsVentasResponse:
+    """Obtener ventas agregadas por período (ADMIN only)."""
+    service = AdminService(db)
+    return service.get_metrics_ventas(fecha_inicio, fecha_fin, granularidad)
+
+
+@router.get("/metricas/productos-top", response_model=MetricsProductoTopResponse)
+async def get_metrics_productos_top(
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> MetricsProductoTopResponse:
+    """Obtener top 10 productos más vendidos (ADMIN only)."""
+    service = AdminService(db)
+    return service.get_metrics_productos_top()
+
+
+@router.get("/metricas/pedidos-por-estado", response_model=MetricsPedidosEstadoResponse)
+async def get_metrics_pedidos_por_estado(
+    current_user: User = Depends(require_role("ADMIN")),
+    db: Session = Depends(get_db),
+) -> MetricsPedidosEstadoResponse:
+    """Obtener distribución de pedidos por estado con porcentajes (ADMIN only)."""
+    service = AdminService(db)
+    return service.get_metrics_pedidos_por_estado()
