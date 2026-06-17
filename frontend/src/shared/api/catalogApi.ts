@@ -46,12 +46,12 @@ export async function fetchProducts(filters: ProductFilters = {}): Promise<Produ
   if (filters.page) params.page = filters.page;
   if (filters.page_size) params.page_size = filters.page_size;
 
-  const response = await client.get<ProductoListResponse>('/catalog/productos', { params });
+  const response = await client.get<ProductoListResponse>('/productos', { params });
   return response.data;
 }
 
 export async function fetchProductBySlug(slug: string): Promise<ProductoResponse> {
-  const response = await client.get<ProductoResponse>(`/catalog/productos/${slug}`);
+  const response = await client.get<ProductoResponse>(`/productos/${slug}`);
   return response.data;
 }
 
