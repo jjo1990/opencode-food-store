@@ -45,26 +45,26 @@ export function OrderDetailModal({ order, isOpen, onClose }: Props) {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <OrderBadge estado={detail.estado_codigo} />
-            <p className="text-lg font-bold text-primary">${Number(detail.total).toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary-700 dark:text-primary-400">${Number(detail.total).toFixed(2)}</p>
           </div>
 
           <hr />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-sm text-gray-500">Subtotal</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Subtotal</span>
               <p className="font-medium">${Number(detail.subtotal).toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-sm text-gray-500">Costo Envío</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Costo Envío</span>
               <p className="font-medium">${Number(detail.costo_envio).toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-sm text-gray-500">Total</span>
-              <p className="text-lg font-bold text-primary">${Number(detail.total).toFixed(2)}</p>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
+              <p className="text-lg font-bold text-primary-700 dark:text-primary-400">${Number(detail.total).toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-sm text-gray-500">Fecha</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Fecha</span>
               <p className="font-medium">{new Date(detail.created_at).toLocaleString()}</p>
             </div>
           </div>
@@ -72,33 +72,33 @@ export function OrderDetailModal({ order, isOpen, onClose }: Props) {
           <hr />
 
           <div>
-            <h3 className="mb-3 font-semibold text-gray-900">Items</h3>
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+            <h3 className="mb-3 font-semibold text-gray-900 dark:text-gray-100">Items</h3>
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500">Producto</th>
-                    <th className="px-3 py-2 text-right font-medium text-gray-500">Precio</th>
-                    <th className="px-3 py-2 text-right font-medium text-gray-500">Cant.</th>
-                    <th className="px-3 py-2 text-right font-medium text-gray-500">Subtotal</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Producto</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Precio</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Cant.</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {detail.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-3 py-2">
-                        <p className="font-medium text-gray-900">{item.nombre_snapshot}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{item.nombre_snapshot}</p>
                         {item.personalizacion && item.personalizacion.length > 0 && (
-                          <p className="mt-0.5 text-xs text-gray-400">
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                             {item.personalizacion.join(', ')}
                           </p>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-right text-gray-700">
+                      <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-300">
                         ${Number(item.precio_snapshot).toFixed(2)}
                       </td>
-                      <td className="px-3 py-2 text-right text-gray-700">{item.cantidad}</td>
-                      <td className="px-3 py-2 text-right font-medium text-gray-900">
+                      <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-300">{item.cantidad}</td>
+                      <td className="px-3 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
                         ${Number(item.subtotal).toFixed(2)}
                       </td>
                     </tr>
@@ -111,7 +111,7 @@ export function OrderDetailModal({ order, isOpen, onClose }: Props) {
           <hr />
 
           <div>
-            <h3 className="mb-3 font-semibold text-gray-900">Historial</h3>
+            <h3 className="mb-3 font-semibold text-gray-900 dark:text-gray-100">Historial</h3>
             <OrderTimeline history={detail.historial} currentState={detail.estado_codigo} />
           </div>
         </div>

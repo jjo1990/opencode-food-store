@@ -157,12 +157,12 @@ export function AddressForm({ isOpen, onClose, address, onSubmit, isLoading }: A
           onChange={(e) => setReferencia(e.target.value)}
           placeholder="Cerca de la plaza"
         />
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input
             type="checkbox"
             checked={esPrincipal}
             onChange={(e) => setEsPrincipal(e.target.checked)}
-            className="rounded border-gray-300 text-primary focus:ring-primary"
+            className="rounded border-gray-300 dark:border-gray-600 text-primary focus-visible:ring-primary"
           />
           Establecer como dirección principal
         </label>

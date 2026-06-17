@@ -14,7 +14,7 @@ const sizeMap: Record<SpinnerSize, string> = {
 export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   return (
     <svg
-      className={['animate-spin text-primary', sizeMap[size], className].join(' ')}
+      className={['animate-spin text-primary dark:text-primary-400', sizeMap[size], className].join(' ')}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

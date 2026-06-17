@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAdminCategorias } from '../../features/admin-catalog/hooks/useAdminCategorias';
+import { Badge } from '../../shared/components/Badge';
 import type { AdminCategoriaListItem } from '../../shared/api/adminCatalogApi';
 
 interface CategoriaNode extends AdminCategoriaListItem {
@@ -40,11 +41,11 @@ export function AdminCategoriasPage() {
       return [
         <tr
           key={item.id}
-          className={item.eliminado ? 'bg-gray-50 text-gray-400' : 'hover:bg-gray-50'}
+          className={item.eliminado ? 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400' : 'hover:bg-gray-50 dark:bg-gray-800'}
         >
           <td className="px-4 py-3 text-sm">
             <span
-              className={item.eliminado ? 'line-through' : 'font-medium text-gray-900'}
+              className={item.eliminado ? 'line-through' : 'font-medium text-gray-900 dark:text-gray-100'}
               style={{ paddingLeft: `${level * 1.5}rem` }}
             >
               {level > 0 && '└ '}
@@ -52,15 +53,11 @@ export function AdminCategoriasPage() {
             </span>
           </td>
           <td className="px-4 py-3 text-center">
-            <span
-              className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                item.eliminado ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-              }`}
-            >
+            <Badge variant={item.eliminado ? 'error' : 'success'} size="sm">
               {item.eliminado ? 'Eliminada' : 'Activa'}
-            </span>
+            </Badge>
           </td>
-          <td className="px-4 py-3 text-sm text-gray-500">
+          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
             {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
           </td>
         </tr>,
@@ -72,8 +69,8 @@ export function AdminCategoriasPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Categorías</h1>
-        <p className="mt-2 text-sm text-gray-500">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Gestión de Categorías</h1>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           Administración de categorías jerárquicas, incluyendo elementos eliminados.
         </p>
       </div>
@@ -82,7 +79,7 @@ export function AdminCategoriasPage() {
         <select
           value={eliminado}
           onChange={(e) => setEliminado(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
         >
           <option value="">Todas</option>
           <option value="false">Activas</option>
@@ -90,30 +87,30 @@ export function AdminCategoriasPage() {
         </select>
       </div>
 
-      {isLoading && <div className="py-12 text-center text-gray-500">Cargando categorías...</div>}
+      {isLoading && <div className="py-12 text-center text-gray-500 dark:text-gray-400">Cargando categorías...</div>}
 
       {isError && <div className="py-12 text-center text-red-500">Error al cargar categorías.</div>}
 
       {data && (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Nombre
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Estado
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Creada
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               {data.items.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={3} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     No se encontraron categorías.
                   </td>
                 </tr>

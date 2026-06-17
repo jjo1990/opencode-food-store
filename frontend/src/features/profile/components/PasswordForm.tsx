@@ -78,7 +78,7 @@ export function PasswordForm({ isOpen, onClose }: PasswordFormProps) {
     >
       <div className="space-y-4">
         {apiError && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{apiError}</div>
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">{apiError}</div>
         )}
         <Input
           label="Contraseña actual"

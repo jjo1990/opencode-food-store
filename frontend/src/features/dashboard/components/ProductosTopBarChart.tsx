@@ -60,7 +60,8 @@ export function ProductosTopBarChart({ data, isLoading, error }: ProductosTopBar
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Top productos más vendidos</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">Top productos mas vendidos</h2>
+      <span className="sr-only">Grafico de productos mas vendidos</span>
       <ResponsiveContainer width="100%" height={400}>
         <BarChart
           data={chartData}

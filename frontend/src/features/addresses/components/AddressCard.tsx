@@ -19,16 +19,16 @@ export function AddressCard({ address, onEdit, onDelete, onSetPrincipal }: Addre
       )}
 
       <div className="space-y-2">
-        {address.alias && <h3 className="font-semibold text-gray-900">{address.alias}</h3>}
-        <p className="text-sm text-gray-700">
+        {address.alias && <h3 className="font-semibold text-gray-900 dark:text-gray-100">{address.alias}</h3>}
+        <p className="text-sm text-gray-700 dark:text-gray-300">
           {address.calle} {address.numero}
           {address.piso && `, Piso ${address.piso}`}
           {address.departamento && `, Dto. ${address.departamento}`}
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {address.ciudad}, CP {address.codigo_postal}
         </p>
-        {address.referencia && <p className="text-xs text-gray-400">Ref: {address.referencia}</p>}
+        {address.referencia && <p className="text-xs text-gray-500 dark:text-gray-400">Ref: {address.referencia}</p>}
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">

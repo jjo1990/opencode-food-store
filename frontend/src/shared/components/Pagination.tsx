@@ -28,18 +28,18 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   const pages = getPageNumbers(currentPage, totalPages);
 
   const btnBase =
-    'flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors';
+    'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-sm font-medium transition-colors';
   const activeClasses = 'bg-primary text-white';
-  const inactiveClasses = 'text-gray-700 hover:bg-gray-100';
-  const disabledClasses = 'text-gray-300 cursor-not-allowed';
+  const inactiveClasses = 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700';
+  const disabledClasses = 'text-gray-400 cursor-not-allowed dark:text-gray-500';
 
   return (
-    <nav className="flex items-center justify-center gap-1" aria-label="Paginación">
+    <nav className="flex items-center justify-center gap-1" aria-label="Paginacion">
       <button
         className={`${btnBase} ${currentPage === 1 ? disabledClasses : inactiveClasses}`}
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
-        aria-label="Página anterior"
+        aria-label="Pagina anterior"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -50,7 +50,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         page === 'ellipsis' ? (
           <span
             key={`ellipsis-${idx}`}
-            className="flex h-9 w-9 items-center justify-center text-gray-400"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-500 dark:text-gray-400"
           >
             ...
           </span>
@@ -59,7 +59,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             key={page}
             className={`${btnBase} ${page === currentPage ? activeClasses : inactiveClasses}`}
             onClick={() => onPageChange(page)}
-            aria-label={`Página ${page}`}
+            aria-label={`Ir a pagina ${page}`}
             aria-current={page === currentPage ? 'page' : undefined}
           >
             {page}
@@ -71,7 +71,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         className={`${btnBase} ${currentPage === totalPages ? disabledClasses : inactiveClasses}`}
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
-        aria-label="Página siguiente"
+        aria-label="Pagina siguiente"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

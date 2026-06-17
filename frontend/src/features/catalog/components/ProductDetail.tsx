@@ -51,7 +51,7 @@ export function ProductDetail({
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <div className="flex h-96 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
+      <div className="flex h-96 items-center justify-center overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
         {product.imagenes && product.imagenes.length > 0 ? (
           <img
             src={product.imagenes[0].url}
@@ -60,7 +60,7 @@ export function ProductDetail({
           />
         ) : (
           <svg
-            className="h-24 w-24 text-gray-300"
+            className="h-24 w-24 text-gray-300 dark:text-gray-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -78,7 +78,7 @@ export function ProductDetail({
       <div className="flex flex-col gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{product.nombre}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{product.nombre}</h1>
             <span
               className={`rounded-full px-3 py-0.5 text-xs font-medium ${
                 product.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -87,23 +87,23 @@ export function ProductDetail({
               {product.disponible ? 'Disponible' : 'Agotado'}
             </span>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {product.categorias?.map((c) => c.nombre).join(', ')}
           </p>
         </div>
 
-        <p className="text-3xl font-bold text-primary">{formatPrice(product.precio)}</p>
+        <p className="text-3xl font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio)}</p>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Descripción
           </h3>
-          <p className="mt-1 text-gray-700">{product.descripcion}</p>
+          <p className="mt-1 text-gray-700 dark:text-gray-300">{product.descripcion}</p>
         </div>
 
         {product.ingredientes && product.ingredientes.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Ingredientes
             </h3>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -113,7 +113,7 @@ export function ProductDetail({
                   className={`rounded-full px-3 py-1 text-xs font-medium ${
                     ing.es_alergeno
                       ? 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300'
-                      : 'bg-gray-100 text-gray-700'
+                      : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {ing.nombre}

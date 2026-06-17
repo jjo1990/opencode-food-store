@@ -12,9 +12,9 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       to={`/catalog/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30 dark:hover:shadow-gray-900/50"
     >
-      <div className="relative flex h-48 items-center justify-center bg-gray-100">
+      <div className="relative flex h-48 items-center justify-center bg-gray-100 dark:bg-gray-700">
         {product.imagenes && product.imagenes.length > 0 ? (
           <img
             src={product.imagenes[0].url}
@@ -23,7 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
           />
         ) : (
           <svg
-            className="h-16 w-16 text-gray-300"
+            className="h-16 w-16 text-gray-300 dark:text-gray-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -38,7 +38,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
         <span
           className={`absolute right-2 top-2 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            product.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            product.disponible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
           }`}
         >
           {product.disponible ? 'Disponible' : 'Agotado'}
@@ -46,10 +46,10 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col justify-between p-4">
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary">
+        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary dark:text-gray-100 dark:group-hover:text-primary-400">
           {product.nombre}
         </h3>
-        <p className="mt-2 text-lg font-bold text-primary">{formatPrice(product.precio)}</p>
+        <p className="mt-2 text-lg font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio)}</p>
       </div>
     </Link>
   );

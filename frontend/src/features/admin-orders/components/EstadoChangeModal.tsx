@@ -3,6 +3,7 @@ import { Modal } from '../../../shared/components/Modal';
 import { OrderBadge } from '../../../shared/components/OrderBadge';
 import { useChangeOrderState } from '../hooks/useAdminOrders';
 import { TRANSITIONS, ESTADO_LABELS } from '../constants';
+import { devLogger } from '../../../shared/utils/logger';
 
 interface Props {
   orderId: string;
@@ -31,6 +32,7 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
           motivo: motivo.trim() || null,
         },
       });
+      devLogger.info('Order state changed', { orderId, newState: selectedState, motivo: motivo.trim() || null });
       onSuccess();
       onClose();
     } catch {
@@ -41,7 +43,7 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
   if (transitions.length === 0) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Cambiar Estado">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Este pedido está en estado terminal y no puede ser modificado.
         </p>
       </Modal>
@@ -58,7 +60,7 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 transition-colors"
           >
             Cancelar
           </button>
@@ -75,18 +77,18 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
     >
       <div className="space-y-4">
         <div>
-          <span className="text-sm text-gray-500">Estado actual</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Estado actual</span>
           <div className="mt-1">
             <OrderBadge estado={currentEstado} />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nuevo estado</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nuevo estado</label>
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
           >
             {transitions.map((estado) => (
               <option key={estado} value={estado}>
@@ -97,7 +99,7 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {isCancelTarget ? 'Motivo de cancelación *' : 'Motivo del cambio'}
           </label>
           <textarea
@@ -110,7 +112,7 @@ export function EstadoChangeModal({ orderId, currentEstado, isOpen, onClose, onS
                 ? 'Describí el motivo de la cancelación (obligatorio)'
                 : 'Motivo del cambio (opcional)'
             }
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 resize-none"
           />
           {isCancelTarget && !motivo.trim() && (
             <p className="mt-1 text-xs text-red-500">

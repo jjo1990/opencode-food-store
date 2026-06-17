@@ -1,6 +1,6 @@
 # 📋 Mapa Completo de Changes — Food Store v5.0
 
-> **Última actualización**: 2026-06-16 (Change 44 archived — Phase 7 ADMIN COMPLETE)
+> **Última actualización**: 2026-06-17 (Change 49 archived — PHASE 8 COMPLETE · PROYECTO FINALIZADO)
 
 > **Documentación de arquitectura del desarrollo**. Este archivo propone el mapa COMPLETO de **49 changes** que implementan Food Store de extremo a extremo, organizados en 8 fases estratégicas con dependencias explícitas.
 
@@ -996,6 +996,59 @@ _Cambios completados, implementados y archivados formalmente en OPSX._
 - **Historias**: US-060
 - **Estado**: ✅ Hecho (archivado 2026-06-16)
 - **Evidencia**: `openspec/changes/archive/2026-06-16-implement-system-configuration/`
+
+### Change 45: `implement-notifications-and-feedback`
+
+- **Funcionalidad**: Sistema centralizado de feedback al usuario — Badge genérico (5 variantes, 2 tamaños), ConfirmationModal para acciones destructivas, mejoras a 6 componentes shared (Modal size/transición, Button size/fullWidth, EmptyState icon/className, ErrorDisplay title, Skeleton count/delay, useToast info/warning), SkeletonTable y SkeletonCard, hook useToastAsync con toast.promise(), eliminación de ToastContainer muerto. 5 archivos nuevos, 12 modificados, 1 eliminado.
+- **Historias**: US-071, US-072
+- **Estado**: ✅ Hecho (archivado 2026-06-17)
+- **Evidencia**: `openspec/changes/archive/2026-06-17-implement-notifications-and-feedback/`
+
+### Change 46: `implement-ui-responsiveness-and-ux`
+
+- **Funcionalidad**: Refactor integral UI/UX — Dark mode con Tailwind `class` strategy (dark: variants en 76 archivos), uiStore con Zustand + persist (tema, sidebar, mobileMenu), MobileDrawer (portal, slide, overlay, scroll-lock, Escape), responsive layout refactor (hamburger, Sidebar `hidden lg:block`), accesibilidad WCAG AA (focus-visible en todos los componentes, 17 aria-labels, focus trap en Modal, skip-to-content, 6 sr-only, semantic HTML en 5 páginas), touch targets ≥44px en 13 lugares, corrección de contraste (text-gray-400→500, text-primary→primary-700, text-red-500→600), PageTransition con fadeIn, tipografía responsiva. 4 archivos nuevos, 76 modificados.
+- **Historias**: Transversal (todas las historias frontend)
+- **Estado**: ✅ Hecho (archivado 2026-06-17)
+- **Evidencia**: `openspec/changes/archive/2026-06-17-implement-ui-responsiveness-and-ux/`
+
+### Change 47: `implement-logging-and-monitoring`
+
+- **Funcionalidad**: Sistema de observabilidad — Backend: JSONFormatter + setup_logging() con LOG_LEVEL, request logging middleware (method, path, status, duration_ms, X-Request-ID, redaction de headers sensibles, skip health/docs), RFC 7807 exception handlers (HTTPException + unhandled Exception con traceback), fix de 3 silent exceptions (dependencies, pedidos/service, seed.py print→logging). Frontend: devLogger (solo en DEV, structured entries), logging estratégico en authStore, cartStore, CheckoutPage, CheckoutForm, EstadoChangeModal, axios interceptor, ErrorBoundary. TanStack Query DevTools condicional en DEV. 11 tests backend nuevos (todos pasan).
+- **Historias**: Transversal (infraestructura)
+- **Estado**: ✅ Hecho (archivado 2026-06-17)
+- **Evidencia**: `openspec/changes/archive/2026-06-17-implement-logging-and-monitoring/`
+
+### Change 48: `implement-unit-tests-backend`
+
+- **Funcionalidad**: Cobertura de tests unitarios — 77 tests nuevos en 4 archivos: test_productos_crud.py (24 tests: CRUD, listing público, stock, disponibilidad, soft delete, filtros), test_pedidos_client.py (29 tests: creación atómica, FSM 6 estados completa, cancelación con restauración de stock, historial, ownership, roles), test_pagos.py (15 tests: creación, webhook con mock MP, idempotencia, historial, reintento), test_checkout.py (9 tests: validación de items, stock, personalizaciones, precio). 12 fixtures nuevos en conftest.py (4 headers por rol + 8 seed data). Cobertura: 48% → 78% (supera meta ≥60%). 229 tests totales (199 pass + 30 pre-existing errors).
+- **Historias**: Bonus (no US pero importante)
+- **Estado**: ✅ Hecho (archivado 2026-06-17)
+- **Evidencia**: `openspec/changes/archive/2026-06-17-implement-unit-tests-backend/`
+
+### Change 49: `deploy-and-documentation`
+
+- **Funcionalidad**: Preparación para producción — 4 bugs críticos corregidos (SECRET_KEY→JWT_SECRET_KEY en .env.example, Dockerfile frontend reescrito multi-stage, requirements.txt +7 deps faltantes, root .env.example legacy reemplazado). 6 archivos nuevos (backend/README.md, frontend/README.md, Procfile, .github/workflows/tests.yml, LICENSE MIT, Swagger metadata). Docker compose arreglado (VITE_API_URL). Checklist Integrador.txt actualizado. 199 tests pasan, TypeScript 0 errores.
+- **Historias**: Transversal (entrega)
+- **Estado**: ✅ Hecho (archivado 2026-06-17)
+- **Evidencia**: `openspec/changes/archive/2026-06-17-deploy-and-documentation/`
+
+---
+
+## 🎉 PROYECTO COMPLETO — 49/49 Changes
+
+| Fase | Changes | Estado |
+|------|---------|--------|
+| Phase 0 — Fundaciones | 1-8 | ✅ |
+| Phase 1 — Auth | 9-16 | ✅ |
+| Phase 2 — Catálogo | 17-21 | ✅ |
+| Phase 3 — Perfil | 22-24 | ✅ |
+| Phase 4 — Carrito | 25-27 | ✅ |
+| Phase 5 — Pedidos | 28-30 | ✅ |
+| Phase 6 — Pagos & FSM | 31-36 | ✅ |
+| Phase 7 — Admin Panel | 37-44 | ✅ |
+| Phase 8 — Pulido | 45-49 | ✅ |
+
+**Total**: 49/49 changes · 199 tests backend · 78% cobertura · TypeScript 0 errores · Docker listo · CI/CD configurado
 
 ---
 

@@ -112,8 +112,8 @@ export function CatalogPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Catálogo de Productos</h1>
-        <p className="mt-1 text-gray-500">Explorá nuestros productos y encontrá lo que buscás</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 lg:text-3xl dark:text-gray-100">Catalogo de Productos</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400 dark:text-gray-400">Explora nuestros productos y encontra lo que buscas</p>
       </div>
 
       <div className="mb-6">

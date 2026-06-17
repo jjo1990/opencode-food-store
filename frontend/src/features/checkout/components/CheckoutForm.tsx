@@ -2,6 +2,7 @@ import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react';
 import { Card } from '../../../shared/components/Card';
 import { postCrearPedido } from '../../../shared/api/pedidosApi';
 import { postCrearPago } from '../../../shared/api/pagosApi';
+import { devLogger } from '../../../shared/utils/logger';
 import type { CartItem } from '../../../stores/cartStore';
 
 initMercadoPago(import.meta.env.VITE_MP_PUBLIC_KEY);
@@ -17,8 +18,8 @@ interface CheckoutFormProps {
 export function CheckoutForm({ amount, items, selectedAddressId, onComplete, onError }: CheckoutFormProps) {
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Tarjeta de crédito/débito</h2>
-      <p className="mb-4 text-sm text-gray-500">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Tarjeta de crédito/débito</h2>
+      <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
         Completá los datos de tu tarjeta para realizar el pago.
       </p>
       <CardPayment
@@ -34,6 +35,7 @@ export function CheckoutForm({ amount, items, selectedAddressId, onComplete, onE
               direccion_id: selectedAddressId,
               forma_pago_codigo: 'MERCADOPAGO',
             });
+            devLogger.info('Payment initiated', { orderId: pedido.id });
             const result = await postCrearPago({
               pedido_id: pedido.id,
               card_token: formData.token,

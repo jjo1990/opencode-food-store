@@ -2,6 +2,7 @@
 Dependency injection and middleware
 """
 
+import logging
 from uuid import UUID
 
 from fastapi import Depends
@@ -12,6 +13,8 @@ from app.core.database import get_db
 from app.core.exceptions import ForbiddenException, UnauthorizedException
 from app.core.security import decode_access_token
 from app.models import User
+
+logger = logging.getLogger(__name__)
 
 # HTTP Bearer security scheme
 http_bearer = HTTPBearer()
@@ -80,6 +83,7 @@ async def get_optional_current_user(
         )
         return user
     except Exception:
+        logger.warning("Token decode failed in get_optional_current_user", exc_info=True)
         return None
 
 

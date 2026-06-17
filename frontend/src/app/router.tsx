@@ -2,7 +2,11 @@ import { lazy } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { Header } from '../widgets/Header';
 import { Footer } from '../widgets/Footer';
+import { Sidebar } from '../widgets/Sidebar';
+import { MobileDrawer } from '../shared/components/MobileDrawer';
+import { PageTransition } from '../shared/components/PageTransition';
 import { ProtectedRoute } from '../features/auth/ProtectedRoute';
+import { useUIStore } from '../stores/uiStore';
 import { CatalogPage } from '../pages/CatalogPage';
 import { ProductDetailPage } from '../pages/ProductDetailPage';
 import { ProfilePage } from '../pages/ProfilePage';
@@ -30,12 +34,28 @@ const PedidosPanelPage = lazy(() => import('../pages/pedidos/PedidosPanelPage'))
 const PedidosReportsPage = lazy(() => import('../pages/pedidos/PedidosReportsPage'));
 
 function Layout() {
+  const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
+
   return (
     <div className="flex min-h-screen flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
+      >
+        Saltar al contenido
+      </a>
       <Header />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+      <div className="flex flex-1">
+        <Sidebar className="hidden lg:block" />
+        <MobileDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+          <Sidebar className="w-64" />
+        </MobileDrawer>
+        <main id="main-content" className="flex-1 overflow-auto" tabIndex={-1}>
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
+        </main>
+      </div>
       <Footer />
     </div>
   );

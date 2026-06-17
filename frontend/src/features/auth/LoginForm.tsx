@@ -37,7 +37,7 @@ export function LoginForm() {
       }}
       className="auth-form"
     >
-      <h2>Iniciar Sesión</h2>
+      <h2 className="dark:text-gray-100">Iniciar Sesión</h2>
 
       {submitError && <div className="error-message">{submitError}</div>}
 

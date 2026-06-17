@@ -1,9 +1,12 @@
 import json
+import logging
 from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.direcciones.repository import DireccionRepository
 from app.models import User
@@ -179,6 +182,7 @@ class PedidoService:
             self.repo.commit()
             self.repo.refresh(pedido)
         except Exception:
+            logger.warning("Failed to create order", exc_info=True)
             self.repo.rollback()
             raise
 
@@ -351,6 +355,7 @@ class PedidoService:
             self.repo.rollback()
             raise
         except Exception:
+            logger.warning("Failed to advance order state", exc_info=True)
             self.repo.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

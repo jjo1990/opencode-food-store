@@ -6,6 +6,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { devLogger } from '../shared/utils/logger';
 
 // ── Types ───────────────────────────────────────────
 
@@ -61,6 +62,8 @@ export const useCartStore = create<CartState>()(
         const personalizacion = item.personalizacion || [];
         const cantidad = item.cantidad || 1;
 
+        devLogger.info('Item added to cart', { productId: producto_id, name: item.nombre, quantity: cantidad });
+
         set((state) => {
           const index = findItemIndex(state.items, producto_id, personalizacion);
 
@@ -109,6 +112,7 @@ export const useCartStore = create<CartState>()(
       },
 
       removeItem: (producto_id, personalizacion) => {
+        devLogger.info('Item removed from cart', { productId: producto_id });
         set((state) => ({
           items: state.items.filter(
             (item) =>
@@ -148,6 +152,7 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: () => {
+        devLogger.info('Cart cleared');
         set({ items: [] });
       },
     }),

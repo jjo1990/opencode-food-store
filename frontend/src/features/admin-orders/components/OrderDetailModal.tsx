@@ -65,54 +65,54 @@ export function OrderDetailModal({
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-mono text-gray-500">Pedido #{order.id.slice(0, 8)}...</h3>
+          <h3 className="text-sm font-mono text-gray-500 dark:text-gray-400">Pedido #{order.id.slice(0, 8)}...</h3>
           <OrderBadge estado={order.estado_codigo} />
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Subtotal</span>
+            <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
             <p className="font-medium">{formatPrice(order.subtotal)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Costo envío</span>
+            <span className="text-gray-500 dark:text-gray-400">Costo envío</span>
             <p className="font-medium">{formatPrice(order.costo_envio)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Total</span>
+            <span className="text-gray-500 dark:text-gray-400">Total</span>
             <p className="font-semibold text-lg">{formatPrice(order.total)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Fecha</span>
+            <span className="text-gray-500 dark:text-gray-400">Fecha</span>
             <p className="font-medium">{formatDate(order.created_at)}</p>
           </div>
         </div>
 
         {order.items.length > 0 && (
           <div>
-            <h4 className="mb-2 text-sm font-semibold text-gray-700">Productos</h4>
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Productos</h4>
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">
+                    <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                       Producto
                     </th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-500">
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                       Precio Unit.
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-medium uppercase text-gray-500">
+                    <th className="px-3 py-2 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                       Cant.
                     </th>
-                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-500">
+                    <th className="px-3 py-2 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                       Subtotal
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                   {order.items.map((item) => (
                     <tr key={item.id}>
-                      <td className="px-3 py-2 font-medium text-gray-900">
+                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
                         {item.nombre_snapshot}
                       </td>
                       <td className="px-3 py-2 text-right">{formatPrice(item.precio_snapshot)}</td>
@@ -128,13 +128,13 @@ export function OrderDetailModal({
 
         {order.historial.length > 0 && (
           <div>
-            <h4 className="mb-2 text-sm font-semibold text-gray-700">Historial</h4>
+            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Historial</h4>
             <OrderTimeline history={timelineEntries} currentState={order.estado_codigo} />
           </div>
         )}
 
         {isTerminal && (
-          <p className="text-center text-sm text-gray-500 italic">Pedido en estado final</p>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 italic">Pedido en estado final</p>
         )}
       </div>
     );
@@ -151,7 +151,7 @@ export function OrderDetailModal({
             <button
               type="button"
               onClick={() => onCancelOrder(order.id, order.estado_codigo)}
-              className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors"
+              className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30"
             >
               Cancelar Pedido
             </button>

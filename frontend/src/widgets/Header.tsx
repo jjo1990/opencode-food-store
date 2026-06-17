@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useCartStore, getTotalItems } from '../stores/cartStore';
+import { useUIStore } from '../stores/uiStore';
 import { CartDrawer } from '../features/cart/components/CartDrawer';
+import { ThemeToggle } from '../shared/components/ThemeToggle';
 import { getMenuItemsByRole } from '../shared/config/navigation';
 
 export function Header() {
@@ -11,22 +13,38 @@ export function Header() {
   const items = getMenuItemsByRole(roles).slice(0, 4);
   const cartItems = useCartStore((state) => state.items);
   const totalItems = getTotalItems(cartItems);
+  const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-          <span className="text-2xl">🍔</span>
-          Food Store
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-2.5 text-gray-500 transition-colors hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-700"
+            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
+            <span className="text-2xl">🍔</span>
+            Food Store
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-6 md:flex">
           {items.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className="text-sm font-medium text-gray-700 hover:text-primary"
+              className="text-sm font-medium text-gray-700 transition-colors hover:text-primary dark:text-gray-300 dark:hover:text-primary-400"
             >
               {item.icon} {item.label}
             </Link>
@@ -34,10 +52,12 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative rounded-lg p-2 text-gray-700 transition-colors hover:bg-gray-100"
-            aria-label="Carrito"
+            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-2.5 text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            aria-label={totalItems > 0 ? `Carrito de compras, ${totalItems} items` : 'Carrito de compras'}
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -56,10 +76,10 @@ export function Header() {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <span className="hidden text-sm text-gray-500 sm:block">{user?.email}</span>
+              <span className="hidden text-sm text-gray-500 sm:block dark:text-gray-400">{user?.email}</span>
               <button
                 onClick={logout}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 Cerrar Sesion
               </button>
@@ -68,7 +88,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 Iniciar Sesion
               </Link>

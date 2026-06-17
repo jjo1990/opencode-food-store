@@ -23,7 +23,7 @@ const ESTADO_COLORS: Record<string, string> = {
 const ESTADO_LABELS: Record<string, string> = {
   PENDIENTE: 'Pendiente',
   CONFIRMADO: 'Confirmado',
-  EN_PREPARACION: 'En Preparación',
+  EN_PREPARACION: 'En Preparacion',
   EN_CAMINO: 'En Camino',
   ENTREGADO: 'Entregado',
   CANCELADO: 'Cancelado',
@@ -109,16 +109,20 @@ export function OrderTimeline({ history, currentState, className = '' }: Props) 
       {steps.map((step, idx) => {
         const isLast = idx === steps.length - 1;
         const colorClass = step.isFuture
-          ? 'bg-gray-300'
+          ? 'bg-gray-300 dark:bg-gray-600'
           : ESTADO_COLORS[step.estado] || 'bg-gray-500';
-        const textClass = step.isFuture ? 'text-gray-400' : 'text-gray-900';
-        const subTextClass = step.isFuture ? 'text-gray-300' : 'text-gray-500';
+        const textClass = step.isFuture ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100';
+        const subTextClass = step.isFuture ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400';
 
         return (
           <div key={idx} className="relative flex gap-4 pb-8 last:pb-0">
             <div className="flex flex-col items-center">
               <div
-                className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${colorClass} ${step.isCurrent && !step.isFuture ? 'ring-2 ring-gray-300 ring-offset-2 ring-offset-white' : ''}`}
+                className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${colorClass} ${
+                  step.isCurrent && !step.isFuture
+                    ? 'ring-2 ring-gray-300 ring-offset-2 ring-offset-white dark:ring-gray-500 dark:ring-offset-gray-900'
+                    : ''
+                }`}
               >
                 {step.isFuture ? (
                   <DotIcon />
@@ -128,13 +132,13 @@ export function OrderTimeline({ history, currentState, className = '' }: Props) 
                   <CheckIcon />
                 )}
               </div>
-              {!isLast && <div className="mt-1 w-0.5 flex-1 bg-gray-200" />}
+              {!isLast && <div className="mt-1 w-0.5 flex-1 bg-gray-200 dark:bg-gray-700" />}
             </div>
             <div className="flex-1 pb-2">
               <p className={`font-medium ${textClass}`}>
                 {ESTADO_LABELS[step.estado] || step.estado}
                 {step.isCurrent && !step.isFuture && (
-                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                     Actual
                   </span>
                 )}
@@ -145,18 +149,18 @@ export function OrderTimeline({ history, currentState, className = '' }: Props) 
                 </p>
               )}
               {step.entry?.actor_id && (
-                <p className={`text-sm ${step.isFuture ? 'text-gray-300' : 'text-gray-400'}`}>
+                <p className={`text-sm ${step.isFuture ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}>
                   por {step.entry.actor_id}
                 </p>
               )}
               {step.entry?.motivo && (
                 <p
-                  className={`text-sm italic ${step.isFuture ? 'text-gray-300' : 'text-gray-400'}`}
+                  className={`text-sm italic ${step.isFuture ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}
                 >
                   &ldquo;{step.entry.motivo}&rdquo;
                 </p>
               )}
-              {step.isFuture && <p className="text-sm text-gray-300">Pendiente</p>}
+              {step.isFuture && <p className="text-sm text-gray-400 dark:text-gray-500">Pendiente</p>}
             </div>
           </div>
         );

@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi, type TokenResponse } from '../shared/api/authApi';
+import { devLogger } from '../shared/utils/logger';
 
 interface User {
   id: string;
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
+          devLogger.info('User logged in', { email });
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Login failed';
           set({ error: message, isLoading: false });
@@ -89,6 +91,7 @@ export const useAuthStore = create<AuthState>()(
         } finally {
           get().clearTokens();
           set({ user: null, isAuthenticated: false, error: null });
+          devLogger.info('User logged out');
         }
       },
 
@@ -127,6 +130,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
+          devLogger.debug('Token refreshed');
         } catch {
           // Token expired or invalid - clear storage
           get().clearTokens();

@@ -4,14 +4,18 @@ Database seed: carga datos iniciales para que el sistema funcione.
 - 3 formas de pago
 """
 
+import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.core.database import SessionLocal
+from app.core.logging import setup_logging
 from app.models.estado_pedido import EstadoPedido
 from app.models.forma_pago import FormaPago
+
+logger = logging.getLogger(__name__)
 
 
 def seed():
@@ -63,14 +67,15 @@ def seed():
             if not exists:
                 db.add(FormaPago(**f))
         db.commit()
-        print("Seed completado exitosamente.")
+        logger.info("Seed completado exitosamente.")
     except Exception as e:
         db.rollback()
-        print(f"Error en seed: {e}")
+        logger.error("Error en seed", exc_info=True)
         raise
     finally:
         db.close()
 
 
 if __name__ == "__main__":
+    setup_logging()
     seed()

@@ -1,8 +1,5 @@
-/**
- * Error Boundary - React error boundary component
- * Following FSD: shared/components/ directory
- */
 import { Component, ReactNode } from 'react';
+import { devLogger } from '../utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -25,7 +22,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    devLogger.error('ErrorBoundary caught error', {
+      error: error.message,
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   render() {
@@ -35,21 +35,27 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="error-boundary">
-          <div className="error-content">
-            <h2>😵 Algo salió mal</h2>
-            <p>Ha ocurrido un error inesperado.</p>
+        <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
+          <div className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+              😵 Algo salio mal
+            </h2>
+            <p className="mb-6 text-gray-600 dark:text-gray-300">
+              Ha ocurrido un error inesperado.
+            </p>
             {this.state.error && (
-              <pre className="error-details">{this.state.error.message}</pre>
+              <pre className="mb-6 overflow-x-auto rounded-lg bg-gray-100 p-4 text-left text-sm text-red-600 dark:bg-gray-700 dark:text-red-400">
+                {this.state.error.message}
+              </pre>
             )}
             <button
               onClick={() => window.location.reload()}
-              className="reload-btn"
+              className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-600"
             >
-              Recargar página
+              Recargar pagina
             </button>
           </div>
-        </div>
+        </main>
       );
     }
 

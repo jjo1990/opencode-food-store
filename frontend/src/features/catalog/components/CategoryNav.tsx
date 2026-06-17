@@ -32,7 +32,7 @@ function CategoryNode({
     <li>
       <div
         className={`flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
-          isSelected ? 'bg-primary-50 font-medium text-primary' : 'text-gray-700 hover:bg-gray-50'
+          isSelected ? 'bg-primary-50 font-medium text-primary' : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
         }`}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
         onClick={() => {
@@ -100,7 +100,7 @@ export function CategoryNav({
 
   return (
     <nav>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
         Categorías
       </h3>
       <ul className="space-y-0.5">
@@ -109,7 +109,7 @@ export function CategoryNav({
             className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
               selectedCategoryId === null
                 ? 'bg-primary-50 font-medium text-primary'
-                : 'text-gray-700 hover:bg-gray-50'
+                : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
             }`}
             onClick={() => onSelectCategory(null)}
           >

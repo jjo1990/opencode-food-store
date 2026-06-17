@@ -2,6 +2,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../stores/authStore';
+import { devLogger } from '../utils/logger';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
@@ -22,7 +23,18 @@ client.interceptors.request.use(
 );
 
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (import.meta.env.DEV) {
+      const method = response.config.method?.toUpperCase() ?? 'UNKNOWN';
+      const url = response.config.url ?? 'UNKNOWN';
+      devLogger.debug('API Response', {
+        method,
+        url,
+        status: response.status,
+      });
+    }
+    return response;
+  },
   (error: AxiosError<{ detail?: string }>) => {
     const status = error.response?.status;
     const message = error.response?.data?.detail || error.message;

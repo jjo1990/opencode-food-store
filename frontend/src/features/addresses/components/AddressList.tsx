@@ -20,7 +20,7 @@ export function AddressList({ onEdit, onDelete, onSetPrincipal, onAdd }: Address
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-xl bg-white shadow-md p-6">
+          <div key={i} className="overflow-hidden rounded-xl bg-white shadow-md dark:bg-gray-800 dark:shadow-gray-900/30 p-6">
             <Skeleton variant="text" width="50%" />
             <div className="mt-3 space-y-2">
               <Skeleton variant="text" width="80%" />

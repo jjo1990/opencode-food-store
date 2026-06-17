@@ -14,7 +14,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
   return (
     <>
       <div className="flex items-center gap-4 py-4">
-        <div className="h-[60px] w-[60px] flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+        <div className="h-[60px] w-[60px] flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
           {item.imagen_url ? (
             <img src={item.imagen_url} alt={item.nombre} className="h-full w-full object-cover" />
           ) : (
@@ -35,10 +35,10 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-gray-900">{item.nombre}</p>
-          <p className="text-sm text-gray-500">{formatPrice(item.precio)}</p>
+          <p className="truncate font-medium text-gray-900 dark:text-gray-100">{item.nombre}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{formatPrice(item.precio)}</p>
           {item.personalizacion.length > 0 && (
-            <p className="mt-0.5 truncate text-xs text-gray-400">
+            <p className="mt-0.5 truncate text-xs text-gray-500">
               Sin: {item.personalizacion.join(', ')}
             </p>
           )}
@@ -47,11 +47,12 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
-            className="h-8 w-8 !p-0"
-            disabled={item.cantidad <= 1}
-            onClick={() =>
-              onUpdateQuantity(item.producto_id, item.personalizacion, item.cantidad - 1)
-            }
+          className="min-h-[44px] min-w-[44px] !p-0"
+          disabled={item.cantidad <= 1}
+          onClick={() =>
+            onUpdateQuantity(item.producto_id, item.personalizacion, item.cantidad - 1)
+          }
+          aria-label="Disminuir cantidad"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -64,10 +65,11 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
 
           <Button
             variant="ghost"
-            className="h-8 w-8 !p-0"
-            onClick={() =>
-              onUpdateQuantity(item.producto_id, item.personalizacion, item.cantidad + 1)
-            }
+          className="min-h-[44px] min-w-[44px] !p-0"
+          onClick={() =>
+            onUpdateQuantity(item.producto_id, item.personalizacion, item.cantidad + 1)
+          }
+          aria-label="Aumentar cantidad"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -80,13 +82,13 @@ export function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowPro
           </Button>
         </div>
 
-        <p className="w-20 text-right font-semibold text-gray-900">
+        <p className="w-20 text-right font-semibold text-gray-900 dark:text-gray-100">
           {formatPrice(item.precio * item.cantidad)}
         </p>
 
         <Button
           variant="ghost"
-          className="h-8 w-8 !p-0 text-gray-400 hover:text-red-500"
+          className="min-h-[44px] min-w-[44px] !p-0 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
           onClick={() => onRemove(item.producto_id, item.personalizacion)}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

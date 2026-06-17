@@ -23,7 +23,7 @@ export function OrdersPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 h-8 w-48 animate-pulse rounded bg-gray-200" />
+        <div className="mb-6 h-8 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
         <div className="space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} variant="card" />
@@ -55,7 +55,7 @@ export function OrdersPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Mis Pedidos</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">Mis Pedidos</h1>
       <OrderList
         orders={data.items}
         total={data.total}

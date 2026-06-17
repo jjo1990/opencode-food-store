@@ -66,7 +66,8 @@ export function VentasLineChart({ data, isLoading, error, granularidad }: Ventas
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Ventas en el tiempo</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">Ventas en el tiempo</h2>
+      <span className="sr-only">Grafico de ventas por dia</span>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />

@@ -29,31 +29,31 @@ function truncateUUID(id: string): string {
 export function AdminOrderTable({ orders, isLoading, onSelectOrder }: Props) {
   if (isLoading) {
     return (
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 ID
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Cliente
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Monto
               </th>
-              <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Estado
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                 Fecha
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                Dirección
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                Direccion
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
             {Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}>
                 <td className="px-4 py-3">
@@ -92,56 +92,56 @@ export function AdminOrderTable({ orders, isLoading, onSelectOrder }: Props) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" aria-label="Listado de pedidos">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">ID</th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">ID</th>
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
               Cliente
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
               Monto
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
+            <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
               Estado
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
               Fecha
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-              Dirección
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+              Direccion
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
           {orders.map((order) => {
             const isTerminal = TERMINAL_STATES.includes(order.estado_codigo);
             const tooltipContent =
               `Cliente: ${order.cliente_nombre || truncateUUID(order.usuario_id)}` +
-              `\nDirección: ${order.direccion_calle || '—'}`;
+              `\nDireccion: ${order.direccion_calle || '—'}`;
 
             return (
               <tr
                 key={order.id}
                 onClick={() => onSelectOrder(order.id)}
                 title={tooltipContent}
-                className={`cursor-pointer hover:bg-gray-50 transition-colors group relative${
+                className={`cursor-pointer transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-800 group relative${
                   isTerminal ? ' opacity-75' : ''
                 }`}
               >
-                <td className="px-4 py-3 text-sm font-mono">{truncateUUID(order.id)}</td>
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <td className="px-4 py-3 text-sm font-mono dark:text-gray-300">{truncateUUID(order.id)}</td>
+                <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {order.cliente_nombre || truncateUUID(order.usuario_id)}
                 </td>
-                <td className="px-4 py-3 text-sm">{formatPrice(order.total)}</td>
+                <td className="px-4 py-3 text-sm dark:text-gray-300">{formatPrice(order.total)}</td>
                 <td className="px-4 py-3 text-center">
                   <OrderBadge estado={order.estado_codigo} />
                 </td>
-                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                <td className="px-4 py-3 text-sm whitespace-nowrap dark:text-gray-300">
                   {formatDate(order.created_at)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-500">{order.direccion_calle || '—'}</td>
+                <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{order.direccion_calle || '—'}</td>
               </tr>
             );
           })}

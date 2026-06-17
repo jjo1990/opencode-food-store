@@ -10,6 +10,7 @@ import { Spinner } from '../shared/components/Spinner';
 import { Skeleton } from '../shared/components/Skeleton';
 import { EmptyState } from '../shared/components/EmptyState';
 import { ErrorDisplay } from '../shared/components/ErrorDisplay';
+import { devLogger } from '../shared/utils/logger';
 import type { Address } from '../entities/address/types';
 import type { CheckoutStep } from '../entities/payment/types';
 
@@ -45,10 +46,12 @@ export function CheckoutPage() {
       if (result.status === 'approved') {
         setStep('success');
         clearCart();
+        devLogger.info('Payment succeeded', { orderId: result.pedidoId, status: result.status });
       } else if (result.status === 'pending') {
         setStep('pending');
       } else {
         setStep('failure');
+        devLogger.warn('Payment failed', { orderId: result.pedidoId, status: result.status, detail: result.statusDetail });
       }
     },
     [clearCart],
@@ -108,7 +111,7 @@ export function CheckoutPage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-lg text-gray-600">Procesando tu pago...</p>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Procesando tu pago...</p>
         </div>
       </div>
     );
@@ -127,8 +130,8 @@ export function CheckoutPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">¡Pago confirmado!</h2>
-        <p className="mb-6 text-gray-500">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">¡Pago confirmado!</h2>
+        <p className="mb-6 text-gray-500 dark:text-gray-400">
           Tu pedido está siendo procesado. Podés seguir su estado desde la sección de pedidos.
         </p>
         <Button onClick={() => navigate('/orders')}>Rastrear pedido</Button>
@@ -154,8 +157,8 @@ export function CheckoutPage() {
             />
           </svg>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Pago rechazado</h2>
-        <p className="mb-2 text-gray-500">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Pago rechazado</h2>
+        <p className="mb-2 text-gray-500 dark:text-gray-400">
           {paymentResult?.detail || 'No se pudo procesar el pago. Intentalo de nuevo.'}
         </p>
         <div className="mt-6 flex justify-center gap-4">
@@ -188,24 +191,24 @@ export function CheckoutPage() {
             />
           </svg>
         </div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">Pago en proceso</h2>
-        <p className="mb-4 text-gray-500">
+        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Pago en proceso</h2>
+        <p className="mb-4 text-gray-500 dark:text-gray-400">
           Tu pago está siendo procesado. Esperá la confirmación por favor.
         </p>
         <Spinner />
-        <p className="mt-4 text-sm text-gray-400">Verificando estado del pago...</p>
+        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Verificando estado del pago...</p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Checkout</h1>
+      <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-gray-100">Checkout</h1>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card>
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Dirección de entrega</h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Dirección de entrega</h2>
             {addressesLoading ? (
               <div className="space-y-3">
                 <Skeleton variant="card" />
@@ -215,7 +218,7 @@ export function CheckoutPage() {
               <ErrorDisplay message="Error al cargar direcciones" onRetry={refetchAddresses} />
             ) : !addresses || addresses.length === 0 ? (
               <div className="py-4 text-center">
-                <p className="mb-2 text-gray-500">No tenés direcciones guardadas</p>
+                <p className="mb-2 text-gray-500 dark:text-gray-400">No tenés direcciones guardadas</p>
                 <Button variant="secondary" onClick={() => navigate('/addresses')}>
                   Agregar dirección
                 </Button>
@@ -228,7 +231,7 @@ export function CheckoutPage() {
                     className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                       selectedAddressId === addr.id
                         ? 'border-primary bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     }`}
                   >
                     <input
@@ -241,17 +244,17 @@ export function CheckoutPage() {
                     />
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-medium text-gray-900">{addr.alias || 'Dirección'}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{addr.alias || 'Dirección'}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {addr.calle} {addr.numero}
                           {addr.piso ? `, Piso ${addr.piso}` : ''}
                           {addr.departamento ? `, Depto ${addr.departamento}` : ''}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {addr.ciudad}, CP {addr.codigo_postal}
                         </p>
                         {addr.referencia && (
-                          <p className="mt-1 text-xs text-gray-400">Ref: {addr.referencia}</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ref: {addr.referencia}</p>
                         )}
                       </div>
                       {addr.es_principal && (
@@ -271,19 +274,19 @@ export function CheckoutPage() {
 
           {!selectedAddressId ? (
             <Card>
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Forma de pago</h2>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Forma de pago</h2>
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-12 items-center justify-center rounded bg-blue-500 text-xs font-bold text-white">
                     MP
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">MercadoPago</p>
-                    <p className="text-sm text-gray-500">Tarjeta de crédito/débito</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">MercadoPago</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Tarjeta de crédito/débito</p>
                   </div>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Seleccioná una dirección de entrega para continuar con el pago.
               </p>
             </Card>
@@ -303,39 +306,39 @@ export function CheckoutPage() {
 
         <div>
           <Card>
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">Resumen</h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Resumen</h2>
             <div className="space-y-3">
               {items.map((item) => (
                 <div
                   key={`${item.producto_id}-${item.personalizacion.join(',')}`}
                   className="flex justify-between text-sm"
                 >
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     {item.nombre} x{item.cantidad}
                   </span>
-                  <span className="text-gray-900">{formatPrice(item.precio * item.cantidad)}</span>
+                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(item.precio * item.cantidad)}</span>
                 </div>
               ))}
             </div>
 
-            <hr className="my-3 border-gray-200" />
+            <hr className="my-3 border-gray-200 dark:border-gray-700" />
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="text-gray-900">{formatPrice(total)}</span>
+                <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
+                <span className="text-gray-900 dark:text-gray-100">{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Envío</span>
+                <span className="text-gray-500 dark:text-gray-400">Envío</span>
                 <span className="font-medium text-green-600">Gratis</span>
               </div>
             </div>
 
-            <hr className="my-3 border-gray-200" />
+            <hr className="my-3 border-gray-200 dark:border-gray-700" />
 
             <div className="flex justify-between">
-              <span className="text-base font-medium text-gray-900">Total</span>
-              <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+              <span className="text-base font-medium text-gray-900 dark:text-gray-100">Total</span>
+              <span className="text-xl font-bold text-primary-700 dark:text-primary-400">{formatPrice(total)}</span>
             </div>
           </Card>
         </div>

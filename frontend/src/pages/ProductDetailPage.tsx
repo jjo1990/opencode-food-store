@@ -26,7 +26,7 @@ export function ProductDetailPage() {
       <div className="mb-6">
         <Link
           to="/catalog"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-primary"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

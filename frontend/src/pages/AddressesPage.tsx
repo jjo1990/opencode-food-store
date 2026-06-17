@@ -7,8 +7,7 @@ import {
 } from '../entities/address/api';
 import { AddressList } from '../features/addresses/components/AddressList';
 import { AddressForm } from '../features/addresses/components/AddressForm';
-import { Modal } from '../shared/components/Modal';
-import { Button } from '../shared/components/Button';
+import { ConfirmationModal } from '../shared/components/ConfirmationModal';
 import type { Address } from '../entities/address/types';
 import type { DireccionCreate, DireccionUpdate } from '../shared/api/direccionesApi';
 
@@ -58,7 +57,7 @@ export function AddressesPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="mb-8 text-2xl font-bold text-gray-900">Mis Direcciones</h1>
+      <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-gray-100">Mis Direcciones</h1>
 
       <AddressList
         onEdit={handleOpenEdit}
@@ -75,29 +74,16 @@ export function AddressesPage() {
         isLoading={isFormLoading}
       />
 
-      <Modal
+      <ConfirmationModal
         isOpen={!!deletingAddress}
         onClose={() => setDeletingAddress(null)}
+        onConfirm={handleDeleteConfirm}
         title="Eliminar dirección"
-        footer={
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={() => setDeletingAddress(null)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteConfirm}
-              isLoading={deleteMutation.isPending}
-            >
-              Eliminar
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-sm text-gray-600">
-          ¿Estás seguro de que querés eliminar esta dirección? Esta acción no se puede deshacer.
-        </p>
-      </Modal>
+        message="¿Estás seguro de que querés eliminar esta dirección? Esta acción no se puede deshacer."
+        variant="danger"
+        confirmLabel="Eliminar"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

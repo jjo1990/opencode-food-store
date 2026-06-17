@@ -6,17 +6,18 @@ import {
   useReactivateAdminUser,
 } from '../../features/admin-users/hooks/useAdminUsers';
 import { UserEditModal } from '../../features/admin-users/components/UserEditModal';
-import { Modal } from '../../shared/components/Modal';
+import { Badge } from '../../shared/components/Badge';
+import { ConfirmationModal } from '../../shared/components/ConfirmationModal';
 import { ErrorDisplay } from '../../shared/components/ErrorDisplay';
 import { EmptyState } from '../../shared/components/EmptyState';
-import { Skeleton } from '../../shared/components/Skeleton';
+import { SkeletonTable } from '../../shared/components/SkeletonTable';
 import type { AdminUserResponse } from '../../shared/api/adminUsersApi';
 
-const ROLE_BADGE: Record<string, string> = {
-  ADMIN: 'bg-red-100 text-red-800',
-  STOCK: 'bg-blue-100 text-blue-800',
-  PEDIDOS: 'bg-orange-100 text-orange-800',
-  CLIENT: 'bg-green-100 text-green-800',
+const ROLE_VARIANT: Record<string, 'error' | 'info' | 'warning' | 'success'> = {
+  ADMIN: 'error',
+  STOCK: 'info',
+  PEDIDOS: 'warning',
+  CLIENT: 'success',
 };
 
 const PAGE_SIZE = 20;
@@ -130,12 +131,9 @@ export function AdminUsersPage() {
     return (
       <div className="flex flex-wrap gap-1">
         {roles.map((role) => (
-          <span
-            key={role}
-            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[role] || 'bg-gray-100 text-gray-800'}`}
-          >
+          <Badge key={role} variant={ROLE_VARIANT[role] || 'neutral'} size="sm">
             {role}
-          </span>
+          </Badge>
         ))}
       </div>
     );
@@ -144,85 +142,28 @@ export function AdminUsersPage() {
   const renderStatusBadge = (user: AdminUserResponse) => {
     if (user.soft_deleted_at) {
       return (
-        <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+        <Badge variant="neutral" size="sm">
           Eliminado
-        </span>
+        </Badge>
       );
     }
     if (user.activo) {
       return (
-        <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+        <Badge variant="success" size="sm">
           Activo
-        </span>
+        </Badge>
       );
     }
     return (
-      <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+      <Badge variant="error" size="sm">
         Inactivo
-      </span>
+      </Badge>
     );
   };
 
   const renderContent = () => {
     if (isLoading) {
-      return (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                  ID
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                  Nombre
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                  Email
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                  Roles
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
-                  Estado
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
-                  Fecha
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i}>
-                  <td className="px-4 py-3">
-                    <Skeleton width="80px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="140px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="180px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="120px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="60px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="100px" height="16px" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton width="60px" height="16px" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
+      return <SkeletonTable rows={8} columns={7} />;
     }
 
     if (isError) {
@@ -250,49 +191,49 @@ export function AdminUsersPage() {
 
     return (
       <>
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Nombre
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Roles
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Estado
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Fecha
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               {data.items.map((user) => (
                 <tr
                   key={user.id}
                   onClick={() => handleRowClick(user)}
                   className={
                     user.soft_deleted_at
-                      ? 'bg-gray-50 text-gray-400 cursor-pointer'
-                      : 'cursor-pointer hover:bg-gray-50 transition-colors'
+                      ? 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer'
+                      : 'cursor-pointer hover:bg-gray-50 dark:bg-gray-800 transition-colors'
                   }
                 >
                   <td className="px-4 py-3 text-sm font-mono">{truncateUUID(user.id)}</td>
                   <td className="px-4 py-3 text-sm">
                     <span
                       className={
-                        user.soft_deleted_at ? 'line-through' : 'font-medium text-gray-900'
+                        user.soft_deleted_at ? 'line-through' : 'font-medium text-gray-900 dark:text-gray-100'
                       }
                     >
                       {user.full_name || user.email}
@@ -309,7 +250,7 @@ export function AdminUsersPage() {
                       {!user.soft_deleted_at && (
                         <button
                           onClick={(e) => handleEditClick(e, user)}
-                          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                          className="rounded-lg p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-700 hover:text-gray-700 dark:text-gray-300 transition-colors"
                           title="Editar usuario"
                         >
                           <svg
@@ -351,7 +292,7 @@ export function AdminUsersPage() {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.total)} de{' '}
             {data.total}
           </p>
@@ -359,14 +300,14 @@ export function AdminUsersPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Anterior
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page >= data.pages}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Siguiente
             </button>
@@ -379,8 +320,8 @@ export function AdminUsersPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-        <p className="mt-2 text-sm text-gray-500">Administración de usuarios, roles y permisos.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Gestión de Usuarios</h1>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Administración de usuarios, roles y permisos.</p>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-3">
@@ -389,12 +330,12 @@ export function AdminUsersPage() {
           placeholder="Buscar por nombre o email..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
         />
         <select
           value={rol}
           onChange={(e) => handleFilterChange(setRol, e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
         >
           <option value="">Todos los roles</option>
           <option value="ADMIN">ADMIN</option>
@@ -405,7 +346,7 @@ export function AdminUsersPage() {
         <select
           value={estado}
           onChange={(e) => handleFilterChange(setEstado, e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
         >
           <option value="activo">Activos</option>
           <option value="inactivo">Inactivos</option>
@@ -417,65 +358,27 @@ export function AdminUsersPage() {
 
       <UserEditModal userId={selectedUserId} isOpen={showEditModal} onClose={handleEditClose} />
 
-      <Modal
+      <ConfirmationModal
         isOpen={!!deactivateUser}
         onClose={() => setDeactivateUser(null)}
+        onConfirm={handleDeactivateConfirm}
         title="Desactivar usuario"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setDeactivateUser(null)}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleDeactivateConfirm}
-              disabled={deleteMutation.isPending}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {deleteMutation.isPending ? 'Desactivando...' : 'Confirmar'}
-            </button>
-          </>
-        }
-      >
-        <p className="text-sm text-gray-600">
-          ¿Desactivar a <strong>{deactivateUser?.full_name || deactivateUser?.email}</strong>? El
-          usuario no podrá acceder al sistema pero sus datos se conservarán.
-        </p>
-      </Modal>
+        message={`¿Desactivar a ${deactivateUser?.full_name || deactivateUser?.email}? El usuario no podrá acceder al sistema pero sus datos se conservarán.`}
+        variant="danger"
+        confirmLabel="Desactivar"
+        isLoading={deleteMutation.isPending}
+      />
 
-      <Modal
+      <ConfirmationModal
         isOpen={!!reactivateUser}
         onClose={() => setReactivateUser(null)}
+        onConfirm={handleReactivateConfirm}
         title="Reactivar usuario"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setReactivateUser(null)}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleReactivateConfirm}
-              disabled={reactivateMutation.isPending}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {reactivateMutation.isPending ? 'Reactivando...' : 'Confirmar'}
-            </button>
-          </>
-        }
-      >
-        <p className="text-sm text-gray-600">
-          ¿Reactivar a <strong>{reactivateUser?.full_name || reactivateUser?.email}</strong>? El
-          usuario recuperará el acceso al sistema.
-        </p>
-      </Modal>
+        message={`¿Reactivar a ${reactivateUser?.full_name || reactivateUser?.email}? El usuario recuperará el acceso al sistema.`}
+        variant="info"
+        confirmLabel="Reactivar"
+        isLoading={reactivateMutation.isPending}
+      />
     </div>
   );
 }

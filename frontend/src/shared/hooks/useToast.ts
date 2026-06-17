@@ -17,6 +17,14 @@ export function useToast() {
     return toast.loading(message);
   };
 
+  const info = (message: string) => {
+    toast(message, { icon: 'ℹ️' });
+  };
+
+  const warning = (message: string) => {
+    toast(message, { icon: '⚠️' });
+  };
+
   const dismiss = () => {
     toast.dismiss();
   };
@@ -31,6 +39,8 @@ export function useToast() {
     success,
     error,
     loading,
+    info,
+    warning,
     dismiss,
     dismissLoading,
   };

@@ -118,7 +118,7 @@ Crear `backend/.env` a partir de `backend/.env.example`:
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/foodstore
-SECRET_KEY=tu-clave-secreta-de-64-caracteres-minimo
+JWT_SECRET_KEY=tu-clave-secreta-de-64-caracteres-minimo
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 MP_ACCESS_TOKEN=TEST-tu-token-de-mercadopago
@@ -135,6 +135,53 @@ VITE_MP_PUBLIC_KEY=TEST-tu-public-key-de-mercadopago
 
 ---
 
+## Arquitectura
+
+```
+                    ┌──────────────────────────┐
+                    │     Frontend (React)      │
+                    │  FSD: Pages → Features    │
+                    │  TanStack Query + Zustand │
+                    └──────────┬───────────────┘
+                               │ HTTP / Axios + JWT
+                               ▼
+                    ┌──────────────────────────┐
+                    │   Backend (FastAPI)       │
+                    │  Router → Service → UoW   │
+                    │       → Repository → Model│
+                    └──────────┬───────────────┘
+                               │
+                    ┌──────────▼───────────────┐
+                    │   PostgreSQL + Alembic    │
+                    └──────────────────────────┘
+```
+
+## Deploy
+
+### Docker
+
+```bash
+docker-compose up --build
+```
+
+Servicios:
+- **PostgreSQL** en `localhost:5432`
+- **Backend** en `http://localhost:8000` (Swagger en `/docs`)
+- **Frontend** en `http://localhost:3000`
+
+### Railway / Render
+
+El proyecto incluye un `Procfile` para deploy en un solo paso. Requiere configurar las variables de entorno en el dashboard de la plataforma.
+
+## Demo
+
+[Ver video demostración](#)
+
+## Documentación por capa
+
+- [backend/README.md](backend/README.md) — Setup y arquitectura del backend
+- [frontend/README.md](frontend/README.md) — Setup y arquitectura del frontend
+
 ## Convenciones de commits
 
 ```
@@ -144,3 +191,7 @@ refactor(modulo): descripción del refactor
 test(modulo): descripción de los tests
 docs(modulo): descripción del cambio en docs
 ```
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE)

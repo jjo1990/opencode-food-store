@@ -76,7 +76,7 @@ export function AdminConfigPage() {
           const isMensaje = key === 'mensaje_bienvenida';
           return (
             <div key={key}>
-              <label className="mb-1 block text-sm font-medium capitalize text-gray-700">
+              <label className="mb-1 block text-sm font-medium capitalize text-gray-700 dark:text-gray-300">
                 {key.replace(/_/g, ' ')}
               </label>
               {isMensaje ? (
@@ -84,18 +84,18 @@ export function AdminConfigPage() {
                   value={value}
                   onChange={(e) => handleChange(key, e.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm focus-visible:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 />
               ) : (
                 <input
                   type="text"
                   value={value}
                   onChange={(e) => handleChange(key, e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm focus-visible:border-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 />
               )}
               {audit && (
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Última modificación: {audit.updated_by_name || 'Sistema'} el{' '}
                   {formatDate(audit.updated_at)}
                 </p>
@@ -111,8 +111,8 @@ export function AdminConfigPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-          <p className="text-sm text-gray-500">Parámetros del sistema</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Configuración</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Parámetros del sistema</p>
         </div>
         {keys.length > 0 && !isLoading && !isError && (
           <button
@@ -132,7 +132,7 @@ export function AdminConfigPage() {
         )}
       </div>
 
-      <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6">
+      <div className="rounded-xl bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/30 border border-gray-200 dark:border-gray-700 p-6">
         {renderContent()}
       </div>
     </div>

@@ -79,7 +79,8 @@ export function PedidosEstadoPieChart({ data, isLoading, error }: PedidosEstadoP
 
   return (
     <Card>
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Pedidos por estado</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">Pedidos por estado</h2>
+      <span className="sr-only">Grafico de pedidos por estado</span>
       <ResponsiveContainer width="100%" height={350}>
         <PieChart>
           <Pie

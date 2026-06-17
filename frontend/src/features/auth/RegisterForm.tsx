@@ -44,7 +44,7 @@ export function RegisterForm() {
       }}
       className="auth-form"
     >
-      <h2>Crear Cuenta</h2>
+      <h2 className="dark:text-gray-100">Crear Cuenta</h2>
 
       {submitError && <div className="error-message">{submitError}</div>}
 

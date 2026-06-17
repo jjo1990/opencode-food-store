@@ -15,23 +15,23 @@ export function CartSummary({ items, onClearCart, onCheckout }: CartSummaryProps
   const total = getTotalPrice(items);
 
   return (
-    <div className="border-t border-gray-200 p-4">
+    <div className="border-t border-gray-200 p-4 dark:border-gray-700">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Subtotal</span>
-          <span className="text-gray-900">{formatPrice(total)}</span>
+          <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
+          <span className="text-gray-900 dark:text-gray-100">{formatPrice(total)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Envio</span>
+          <span className="text-gray-500 dark:text-gray-400">Envio</span>
           <span className="font-medium text-green-600">Gratis</span>
         </div>
       </div>
 
-      <hr className="my-3 border-gray-200" />
+      <hr className="my-3 border-gray-200 dark:border-gray-700" />
 
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-base font-medium text-gray-900">Total</span>
-        <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+        <span className="text-base font-medium text-gray-900 dark:text-gray-100">Total</span>
+        <span className="text-xl font-bold text-primary-700 dark:text-primary-400">{formatPrice(total)}</span>
       </div>
 
       <Button className="w-full" onClick={onCheckout}>

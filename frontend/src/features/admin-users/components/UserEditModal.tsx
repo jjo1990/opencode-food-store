@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Modal } from '../../../shared/components/Modal';
+import { ConfirmationModal } from '../../../shared/components/ConfirmationModal';
+import { Badge } from '../../../shared/components/Badge';
 import { Spinner } from '../../../shared/components/Spinner';
 import { ErrorDisplay } from '../../../shared/components/ErrorDisplay';
 import { type AdminUserUpdateRequest } from '../../../shared/api/adminUsersApi';
@@ -12,6 +14,13 @@ const ROLE_LABELS: Record<string, string> = {
   STOCK: 'Gestor de Stock',
   PEDIDOS: 'Gestor de Pedidos',
   ADMIN: 'Administrador',
+};
+
+const ROLE_VARIANT: Record<string, 'error' | 'info' | 'warning' | 'success'> = {
+  ADMIN: 'error',
+  STOCK: 'info',
+  PEDIDOS: 'warning',
+  CLIENT: 'success',
 };
 
 interface UserEditModalProps {
@@ -152,11 +161,11 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
     if (isSoftDeleted) {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-gray-50 p-4 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4 text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Este usuario fue eliminado el {formatDate(user.soft_deleted_at!)}.
             </p>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Podés reactivarlo desde la tabla principal.
             </p>
           </div>
@@ -167,62 +176,54 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nombre completo</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre completo</label>
           <input
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm dark:shadow-gray-900/30 focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm dark:shadow-gray-900/30 focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
           <input
             type="text"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm dark:shadow-gray-900/30 focus-visible:border-indigo-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Roles</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roles</label>
           <div className="space-y-2">
             {ROLES.map((role) => (
               <label
                 key={role}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 hover:bg-gray-50 dark:bg-gray-800 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={roles.includes(role)}
                   onChange={() => handleRoleToggle(role)}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus-visible:ring-indigo-500"
                 />
-                <span className="text-sm text-gray-700">{ROLE_LABELS[role]}</span>
-                <span
-                  className={`ml-auto inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                    role === 'ADMIN'
-                      ? 'bg-red-100 text-red-800'
-                      : role === 'STOCK'
-                        ? 'bg-blue-100 text-blue-800'
-                        : role === 'PEDIDOS'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-green-100 text-green-800'
-                  }`}
-                >
-                  {role}
+                <span className="text-sm text-gray-700 dark:text-gray-300">{ROLE_LABELS[role]}</span>
+                <span className="ml-auto">
+                  <Badge variant={ROLE_VARIANT[role] || 'neutral'} size="sm">
+                    {role}
+                  </Badge>
                 </span>
               </label>
             ))}
@@ -261,7 +262,7 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
                   <button
                     type="button"
                     onClick={handleAdminRemoveCancel}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800"
                   >
                     Cancelar
                   </button>
@@ -271,8 +272,8 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
-          <span className="text-sm font-medium text-gray-700">Usuario activo</span>
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Usuario activo</span>
           <button
             type="button"
             onClick={() => setActivo(!activo)}
@@ -281,14 +282,14 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                 activo ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>
         </div>
 
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           <p>ID: {user.id}</p>
           <p>Registrado: {formatDate(user.created_at)}</p>
         </div>
@@ -304,7 +305,7 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800"
         >
           Cerrar
         </button>
@@ -324,7 +325,7 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-800"
         >
           Cancelar
         </button>
@@ -346,35 +347,16 @@ export function UserEditModal({ userId, isOpen, onClose }: UserEditModalProps) {
         {renderContent()}
       </Modal>
 
-      <Modal
+      <ConfirmationModal
         isOpen={showDeactivateConfirm}
         onClose={() => setShowDeactivateConfirm(false)}
+        onConfirm={handleDeactivate}
         title="Desactivar usuario"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setShowDeactivateConfirm(false)}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleDeactivate}
-              disabled={deleteMutation.isPending}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {deleteMutation.isPending ? 'Desactivando...' : 'Confirmar'}
-            </button>
-          </>
-        }
-      >
-        <p className="text-sm text-gray-600">
-          ¿Desactivar a <strong>{user?.full_name || user?.email}</strong>? El usuario no podrá
-          acceder al sistema pero sus datos se conservarán.
-        </p>
-      </Modal>
+        message={`¿Desactivar a ${user?.full_name || user?.email}? El usuario no podrá acceder al sistema pero sus datos se conservarán.`}
+        variant="danger"
+        confirmLabel="Desactivar"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   );
 }

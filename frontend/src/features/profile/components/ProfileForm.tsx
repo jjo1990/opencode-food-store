@@ -66,7 +66,7 @@ export function ProfileForm() {
   return (
     <Card>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Información personal</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Información personal</h2>
         {!isEditing && (
           <Button variant="ghost" onClick={() => setIsEditing(true)}>
             Editar
@@ -101,24 +101,24 @@ export function ProfileForm() {
       ) : (
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-gray-500">Email</p>
-            <p className="text-gray-900">{profile.email}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+            <p className="text-gray-900 dark:text-gray-100">{profile.email}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Nombre completo</p>
-            <p className="text-gray-900">{profile.full_name || '—'}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Nombre completo</p>
+            <p className="text-gray-900 dark:text-gray-100">{profile.full_name || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Teléfono</p>
-            <p className="text-gray-900">{profile.telefono || '—'}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Teléfono</p>
+            <p className="text-gray-900 dark:text-gray-100">{profile.telefono || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Miembro desde</p>
-            <p className="text-gray-900">{formatDate(profile.created_at)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Miembro desde</p>
+            <p className="text-gray-900 dark:text-gray-100">{formatDate(profile.created_at)}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Roles</p>
-            <p className="text-gray-900">{profile.roles.join(', ')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Roles</p>
+            <p className="text-gray-900 dark:text-gray-100">{profile.roles.join(', ')}</p>
           </div>
         </div>
       )}

@@ -11,7 +11,7 @@ export function PaginationBar({ currentPage, totalPages, onPageChange }: Paginat
 
   return (
     <div className="mt-8 flex items-center justify-between">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         Página {currentPage} de {totalPages}
       </p>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />

@@ -1,12 +1,13 @@
 interface ErrorDisplayProps {
   message: string;
+  title?: string;
   onRetry?: () => void;
 }
 
-export function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
+export function ErrorDisplay({ message, title = 'Algo salio mal', onRetry }: ErrorDisplayProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-red-50 p-8 text-center">
-      <svg className="h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-xl bg-red-50 p-8 text-center dark:bg-red-900/20 dark:border dark:border-red-800">
+      <svg className="h-12 w-12 text-red-400 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -15,8 +16,8 @@ export function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
         />
       </svg>
       <div>
-        <h3 className="text-lg font-semibold text-red-800">Algo salió mal</h3>
-        <p className="mt-1 text-sm text-red-600">{message}</p>
+        <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">{title}</h3>
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{message}</p>
       </div>
       {onRetry && (
         <button

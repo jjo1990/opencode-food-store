@@ -38,16 +38,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const drawerContent = (
     <>
-      <div className="flex items-center justify-between border-b border-gray-200 p-4">
-        <h2 className="text-lg font-semibold text-gray-900">
+      <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Mi Carrito
           {totalItems > 0 && (
-            <span className="ml-2 text-sm font-normal text-gray-500">
+            <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
               ({totalItems} {totalItems === 1 ? 'item' : 'items'})
             </span>
           )}
         </h2>
-        <Button variant="ghost" className="h-8 w-8 !p-0" onClick={onClose}>
+        <Button variant="ghost" className="h-8 w-8 !p-0" onClick={onClose} aria-label="Cerrar carrito">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -108,7 +108,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </>
         }
       >
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Se eliminaran todos los productos del carrito. Esta accion no se puede deshacer.
         </p>
       </Modal>
@@ -124,7 +124,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         onClick={onClose}
       />
       <div
-        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-white shadow-xl transition-transform duration-300 md:max-w-lg ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-white shadow-xl transition-transform duration-300 dark:bg-gray-900 md:max-w-lg ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
