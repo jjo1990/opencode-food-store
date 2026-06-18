@@ -3,12 +3,11 @@ import client from './client';
 export interface ProductoResponse {
   id: string;
   nombre: string;
-  slug: string;
   descripcion: string;
-  precio: number;
+  precio_base: number;
   stock_cantidad: number;
   disponible: boolean;
-  imagenes: { url: string; orden: number }[];
+  imagen_url: string | null;
   categorias: { id: string; nombre: string; slug: string }[];
   ingredientes: { id: string; nombre: string; es_alergeno: boolean }[];
 }
@@ -16,9 +15,8 @@ export interface ProductoResponse {
 export interface ProductoListResponse {
   items: ProductoResponse[];
   total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+  skip: number;
+  limit: number;
 }
 
 export interface CategoriaResponse {
@@ -50,8 +48,8 @@ export async function fetchProducts(filters: ProductFilters = {}): Promise<Produ
   return response.data;
 }
 
-export async function fetchProductBySlug(slug: string): Promise<ProductoResponse> {
-  const response = await client.get<ProductoResponse>(`/productos/${slug}`);
+export async function fetchProductById(id: string): Promise<ProductoResponse> {
+  const response = await client.get<ProductoResponse>(`/productos/${id}`);
   return response.data;
 }
 

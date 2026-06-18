@@ -1,8 +1,3 @@
-export interface ProductImage {
-  url: string;
-  orden: number;
-}
-
 export interface ProductCategory {
   id: string;
   nombre: string;
@@ -18,12 +13,11 @@ export interface ProductIngredient {
 export interface Product {
   id: string;
   nombre: string;
-  slug: string;
   descripcion: string;
-  precio: number;
+  precio_base: number;
   stock_cantidad: number;
   disponible: boolean;
-  imagenes: ProductImage[];
+  imagen_url: string | null;
   categorias: ProductCategory[];
   ingredientes: ProductIngredient[];
 }
@@ -31,9 +25,8 @@ export interface Product {
 export interface ProductListResponse {
   items: Product[];
   total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+  skip: number;
+  limit: number;
 }
 
 export interface ProductFilters {

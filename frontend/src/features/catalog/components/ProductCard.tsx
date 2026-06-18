@@ -11,13 +11,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link
-      to={`/catalog/${product.slug}`}
+      to={`/catalog/${product.id}`}
       className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30 dark:hover:shadow-gray-900/50"
     >
       <div className="relative flex h-48 items-center justify-center bg-gray-100 dark:bg-gray-700">
-        {product.imagenes && product.imagenes.length > 0 ? (
+        {product.imagen_url ? (
           <img
-            src={product.imagenes[0].url}
+            src={product.imagen_url}
             alt={product.nombre}
             className="h-full w-full object-cover"
           />
@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary dark:text-gray-100 dark:group-hover:text-primary-400">
           {product.nombre}
         </h3>
-        <p className="mt-2 text-lg font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio)}</p>
+        <p className="mt-2 text-lg font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio_base)}</p>
       </div>
     </Link>
   );

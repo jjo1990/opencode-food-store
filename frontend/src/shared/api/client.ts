@@ -39,13 +39,21 @@ client.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.detail || error.message;
 
-    let toastMessage = 'Ocurrió un error';
+    let toastMessage: string | null = 'Ocurrió un error';
 
     switch (status) {
-      case 401:
-        toastMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
-        useAuthStore.getState().clearTokens();
+      case 401: {
+        const { accessToken, clearTokens } = useAuthStore.getState();
+        // Si tenía un token activo y el backend lo rechazó -> sesión expirada
+        if (accessToken) {
+          toastMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
+          clearTokens();
+        } else {
+          // Sin token activo: 401 es esperable (login inválido) -> no mostrar toast
+          toastMessage = null;
+        }
         break;
+      }
       case 403:
         toastMessage = 'No tienes permiso para realizar esta acción.';
         break;
@@ -69,7 +77,9 @@ client.interceptors.response.use(
         }
     }
 
-    toast.error(toastMessage);
+    if (toastMessage) {
+      toast.error(toastMessage);
+    }
     return Promise.reject(error);
   }
 );

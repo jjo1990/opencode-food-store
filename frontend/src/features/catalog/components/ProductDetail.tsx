@@ -52,9 +52,9 @@ export function ProductDetail({
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div className="flex h-96 items-center justify-center overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
-        {product.imagenes && product.imagenes.length > 0 ? (
+        {product.imagen_url ? (
           <img
-            src={product.imagenes[0].url}
+            src={product.imagen_url}
             alt={product.nombre}
             className="h-full w-full object-cover"
           />
@@ -92,7 +92,7 @@ export function ProductDetail({
           </p>
         </div>
 
-        <p className="text-3xl font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio)}</p>
+        <p className="text-3xl font-bold text-primary-700 dark:text-primary-400">{formatPrice(product.precio_base)}</p>
 
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">

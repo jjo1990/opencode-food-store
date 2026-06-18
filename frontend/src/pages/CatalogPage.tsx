@@ -153,10 +153,10 @@ export function CatalogPage() {
             onClearFilters={handleClearFilters}
           />
 
-          {productData && productData.total_pages > 1 && (
+          {productData && Math.ceil(productData.total / productData.limit) > 1 && (
             <PaginationBar
               currentPage={page}
-              totalPages={productData.total_pages}
+              totalPages={Math.ceil(productData.total / productData.limit)}
               onPageChange={handlePageChange}
             />
           )}

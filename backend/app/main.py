@@ -12,12 +12,15 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.admin.router import router as admin_router
 from app.auth.router import router as auth_router
 from app.categorias.router import router as categorias_router
 from app.checkout.router import router as checkout_router
 from app.core.config import CORS_ORIGINS
+from app.core.limiter import limiter
 from app.core.logging import setup_logging
 from app.core.middleware import logging_middleware
 from app.direcciones.router import router as direcciones_router
@@ -40,6 +43,10 @@ app = FastAPI(
     contact={"name": "Food Store Team"},
     license_info={"name": "MIT"},
 )
+
+# Rate limiter — wire to app state so @limiter.limit decorators can find it
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.middleware("http")(logging_middleware)
 

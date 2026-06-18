@@ -6,16 +6,16 @@ import toast from 'react-hot-toast';
 import type { Product } from '../entities/product/types';
 
 export function ProductDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const { data: product, isLoading, isError, error, refetch } = useProduct(slug || '');
+  const { id } = useParams<{ id: string }>();
+  const { data: product, isLoading, isError, error, refetch } = useProduct(id || '');
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = (product: Product) => {
     addItem({
       producto_id: product.id,
       nombre: product.nombre,
-      imagen_url: product.imagenes?.[0]?.url ?? null,
-      precio: product.precio,
+      imagen_url: product.imagen_url ?? null,
+      precio: product.precio_base,
       personalizacion: [],
     });
     toast.success('Agregado al carrito');

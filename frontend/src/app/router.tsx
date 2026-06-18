@@ -12,6 +12,9 @@ import { ProductDetailPage } from '../pages/ProductDetailPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { AddressesPage } from '../pages/AddressesPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+import { DashboardPage } from '../pages/DashboardPage';
 
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage'));
@@ -63,11 +66,20 @@ function Layout() {
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
+  },
+  {
     element: <Layout />,
     children: [
       { path: '/', element: <CatalogPage /> },
+      { path: '/dashboard', element: <DashboardPage /> },
       { path: '/catalog', element: <CatalogPage /> },
-      { path: '/catalog/:slug', element: <ProductDetailPage /> },
+      { path: '/catalog/:id', element: <ProductDetailPage /> },
 
       {
         path: '/admin',

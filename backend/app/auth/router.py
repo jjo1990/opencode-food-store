@@ -2,9 +2,7 @@
 Authentication routes
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.auth.schemas import (
@@ -18,29 +16,37 @@ from app.auth.service import AuthService
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.exceptions import InvalidTokenException
+from app.core.limiter import limiter
 from app.models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address)
-
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(request: RegisterRequest, db: Session = Depends(get_db)) -> UserResponse:
+async def register(
+    request: Request,
+    register_data: RegisterRequest,
+    db: Session = Depends(get_db),
+) -> UserResponse:
     """Register a new user"""
     service = AuthService(db)
     return service.register(
-        email=request.email, password=request.password, full_name=request.full_name
+        email=register_data.email,
+        password=register_data.password,
+        full_name=register_data.full_name,
     )
 
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("5/15minutes")
-async def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+async def login(
+    request: Request,
+    login_data: LoginRequest,
+    db: Session = Depends(get_db),
+) -> TokenResponse:
     """Login with email and password"""
     service = AuthService(db)
-    return service.login(email=request.email, password=request.password)
+    return service.login(email=login_data.email, password=login_data.password)
 
 
 @router.post("/refresh", response_model=TokenResponse)
